@@ -1,8 +1,9 @@
 ---
 title: "Ad Hoc Network Simulation"
-author: "Jun Tan 26370084"
+author: "Jun Tan 26370084", "Peirang Xu 25117973","Roozbeh Faghihi Moghadam 25765752"
 output: word_document
 ---
+Part 1
 
 ```{r genNodes}
 source("http://www.stat.berkeley.edu/users/nolan/data/nodeDensity.R")
@@ -25,7 +26,125 @@ genNodes = function(n) {
 }
 ```
 
-```{r }
+```{r test}
 x = genNodes(500)
 dim(x)
+```
+
+Part 2
+
+```{r findRc}
+findTranMat = function (mat, R){
+  m = ifelse(apply(mat, 1, '>', R), 0, 1)
+  ifelse(apply(mat,1,'<=', R), 1/colSums(m), 0)
+}
+
+getEigen2 = function (mat){
+  m= eigs(mat, 2 , which = "LM", sigma= NULL, opt = list(retvec = FALSE))
+  
+  return(m$values[2])
+}
+
+findRange = function(mat){
+  p = apply(mat, 1, function(x) max(x[x>0]))
+  q = apply(mat, 1, function(x) min(x[x>0]))
+  
+  return(as.numeric(c(max(q), min(p))))
+}
+
+findRc = function (nodes, tol = 0.05){
+  distBNodes = as.matrix(dist(nodes))
+  Range = findRange (distBNodes)
+  R1 = max(Range)
+  R2 = min(Range)
+  
+  while(abs(R1 - R2)> tol){
+    R0 = median(c(R1, R2))
+    transR = findTranMat(distBNodes, R0)
+    m = getEigen2(transR)
+    
+    if (Mod(m) < 1){
+      R1 = R0
+    } else R2 = R0
+  }
+    return(R1)
+}
+```
+
+```{r findRc test}
+x = c(1, 2, 3)
+y = c(5, 5, 2)
+
+nodes3 = matrix(c(x,y), nrow = 3)
+
+distBNodes = as.matrix(dist(nodes3))
+
+# If R = 3.5 then 
+findTranMat(distBNodes, 3.5)
+#returns
+tranR3.5 = matrix(c(1/2, 1/2, 0, 1/3, 1/3, 1/3, 0, 01/2, 1/2), 
+                  byrow = TRUE, nrow = 3)
+
+
+# and 
+getEigen2(tranR3.5)
+#returns 0.5 
+
+# If R = 2 then
+findTranMat(distBNodes, 2)
+#returns
+tranR2 = matrix(c(1/2, 1/2, 0, 1/2, 1/2, 0, 0, 0, 1), 
+                byrow = TRUE, nrow = 3)
+
+#And 
+getEigen2(tranR2)
+#returns 1
+
+#Additionally, 
+findRange(distBNodes)
+#returns approximately
+# 3.16227766 3.16227766
+
+#AND
+findRc(nodes3, tol = 0.001)
+# Returns
+# 3.162  
+
+################
+#ANother example
+nodes5 = matrix(c(1,3,2,1,3,3,3,2,0,0), nrow =5)
+distBNodes5 = as.matrix(dist(nodes5))
+
+findTranMat(distBNodes5, 2)
+#returns
+tranR2 = matrix(c(1/3, 1/3, 1/3, 0, 0, 
+                  1/3, 1/3, 1/3, 0, 0,
+                  1/3, 1/3, 1/3, 0, 0,
+                  0, 0, 0, 1/2, 1/2,
+                  0, 0, 0, 1/2, 1/2), 
+                byrow = TRUE, nrow = 5)
+
+getEigen2(tranR2)
+# returns 1
+
+#Additionally, 
+findRange(distBNodes5)
+#returns approximately
+# 2   2.23608
+
+#Also
+tranR2.23 = findTranMat(distBNodes5, 2.23)
+getEigen2(tranR2.23)
+# returns 1
+
+#AND
+findRc(nodes5, tol = 0.0001)
+# Returns approximately
+#2.23608
+```
+
+```{r additional test}
+x = genNodes(200)
+findRc(nodes = x, tol = 0.05)
+
 ```
