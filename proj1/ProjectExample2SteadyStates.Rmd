@@ -1,0 +1,134 @@
+---
+title: "Example of Connected Nodes"
+output: html_document
+---
+
+
+## Introduction
+
+The following exercises will help you consider some of the issues in finding the smallest `Rc` such that a node configuration is completely connected.
+
+We will work with the following set of 10 nodes
+
+```{r}
+nodes2state = matrix( c(
+  46.25722095370, 45.18229861278,
+  22.49341397546,  7.66819571145,
+  67.68764129374, 23.56366263703,
+  37.55860633682, 84.12622071337,
+  12.53100726753, 22.94614179991,
+  4.06135825906, 81.71979754698,
+  12.47756232042, 17.52703324892,
+  66.06890531257, 33.23447662406,
+  23.36478442885, 23.19627322722,
+  58.50740030874, 35.34655489493), byrow = TRUE,
+  nrow = 10)
+```
+
+For these nodes, we find the distance between all pairs
+with
+
+```{r}
+distBtwnNodes = as.matrix(dist(nodes2state))
+```
+
+## The range of Rc values
+
+If you have written your `findRange` function, you can call it with `distBtwnNodes` as input. If you do, then
+you should get something like the following:
+
+```{r}
+findRange = function(mat){
+  p = apply(mat, 1, function(x) max(x[x>0]))
+  q = apply(mat, 1, function(x) min(x[x>0]))
+  
+  return(as.numeric(c(max(q), min(p))))
+}
+my_rangeRC = findRange(distBtwnNodes)
+my_rangeRC
+rangeRc = c( 33.58357487, 55.81648195)
+rangeRc
+```
+
+## Minimizing Rc
+
+When search through this range of values with a tolerance of 0.01, I find that the following interval
+
+```{r}
+intervalTol = c(39.90307, 39.90375)
+intervalTol
+```
+
+These two values are within 0.001 of each other so our search algorithm stops at this point. 
+Do we use the lower end point, the upper end point or the midpoint of this interval as our `Rc`?
+
+I have written a little function that prints a matrix of connections given a set of nodes and a value for `R`.
+
+```{r}
+nodesConnect = function(nodes, R) {
+  distBtwnNodes = as.matrix(dist(nodes))
+  n = nrow(nodes)
+  matGo = matrix(1:n, nrow = n, ncol = n, byrow = TRUE)
+  matGo[ distBtwnNodes > R] = 0
+  diag(matGo) = 0
+  matGo
+}
+```
+
+
+Call this function 3 times. Once each for the lower, mid, and upper end points of the interval. What do you see?
+
+
+```{r}
+nodesConnect(nodes2state, R = intervalTol[1])
+```
+
+Can you see 2 nodes that form a small separate cluster that are disconnected from the other points? 
+
+For which these 3 values is the network completely connected?
+
+Why is this happening?  What are the implications for your `findRc` function?
+
+## Eigenvalues
+
+Examine the second largest eigenvalue of the transition matrix to confirm what you have found out about the connectedness of the network for these 3 values.
+
+If you have created your `findTranMat` function already,
+call it with `distBtwnNodes` to find the transition matrix for the lower end point of the interval.  
+
+```{r, eval = FALSE}
+tranMatLower = findTranMat(distBtwnNodes,
+                           intervalTol[1])
+```
+
+If you haven't completed this function yet, then you
+can use the transition matrix that I derived 
+
+```{r}
+tranMatLower = matrix( 
+  c(0.2, 0, 0.2, 0, 0, 0, 0, 0.2, 0.2, 0.2,
+    0, 0.2, 0, 0, 0.2, 0, 0.2, 0, 0.2, 0.2,
+    0.25, 0, 0.25, 0, 0, 0, 0, 0.25, 0, 0.25,
+    0, 0, 0, 0.5, 0, 0.5, 0, 0, 0, 0,
+    0, 0.25, 0, 0, 0.25, 0, 0.25, 0, 0.25, 0,
+    0, 0, 0, 0.5, 0, 0.5, 0, 0, 0, 0,
+    0, 0.25, 0, 0, 0.25, 0, 0.25, 0, 0.25, 0,
+    0.25, 0, 0.25, 0, 0, 0, 0, 0.25, 0, 0.25,
+    1/6, 1/6, 0, 0, 1/6, 0, 1/6, 0, 1/6, 1/6,
+    0.2, 0, 0.2, 0, 0, 0, 0, 0.2, 0.2, 0.2),
+    nrow = 10, byrow = TRUE)
+```
+
+Call the `eigs` function or the `eigen` function to find the values for the first 5 eigen values of this transition matrix. Read the documentation for the function(s). Return only the eigen values. Notice that even when you return only the eigen values, the return value is a list. How do you extract the 5 eigen values 
+for this list?
+
+```{r}
+
+```
+
+Apply the `Mod` function to these values to find the magnitude of the eigenvalues.
+
+Repeat for the upper endpoint of the interval. Use your `findTranMat` function to find the respective transition matrix, or modify `tranMatLower` slightly to get `tranMatUpper`. Only 1 row changes. Which is it and why
+does this make the network connected?
+
+

@@ -1,0 +1,31 @@
+---
+title: "Ad Hoc Network Simulation"
+author: "Jun Tan 26370084"
+output: word_document
+---
+
+```{r genNodes}
+source("http://www.stat.berkeley.edu/users/nolan/data/nodeDensity.R")
+genNodes = function(n) {
+  x_new = c()
+  y_new = c()
+  while (length(x_new) < n & length(y_new) < n) {
+    x = runif(n, min = 0, max = 100)
+    y = runif(n, min = 0, max = 100)
+    gridPts = expand.grid(x, y)
+    zMax = ceiling(max(nodeDensity(gridPts$Var1, gridPts$Var2)))
+    z = runif(n, min = 0, max = zMax)
+    keep = nodeDensity(x, y) > z
+    
+    x_new = c(x_new, x[keep])
+    
+    y_new = c(y_new, y[keep])
+  }
+  return(matrix(c(x_new[1:n], y_new[1:n]), ncol = 2, byrow = FALSE))
+}
+```
+
+```{r }
+x = genNodes(500)
+dim(x)
+```

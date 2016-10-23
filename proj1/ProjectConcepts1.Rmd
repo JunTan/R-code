@@ -1,0 +1,63 @@
+---
+title: "Project Ideas"
+output: html_document
+---
+
+## Bounding Box for Node Density
+
+You will be generating data in a 3-dimensional rectangle that encompasses the population density. We know the (x, y) space is 100 by 100, but we need to figure out the height in the z dimension. To do this generate a dense grid in the (x, y) plane.  Make a vector of x's and a vector of y's that are 200 long and range from 0 to 100.
+
+```{r error = TRUE}
+x = seq(from = 0, to = 100, length.out = 200)
+y = seq(from = 0, to = 100, length.out = 200)
+```
+
+
+Now use `expand.grid()` to create a grid of all combinations of x and y
+
+```{r, error=TRUE}
+gridPts = expand.grid(x, y)
+```
+
+Check the dimensions of gridPts. It should have 200 * 200 rows.
+
+```{r, error=TRUE}
+dim(gridPts)
+```
+
+Pass `gridPts` to `nodeDensity` and find the maximum value returned.
+Use this value plus a smidgen as the hieght of the 3-dimensional cube.
+Call is `zMax`.
+
+```{r}
+source("http://www.stat.berkeley.edu/users/nolan/data/nodeDensity.R")
+zMax = ceiling(max(nodeDensity(gridPts$Var1, gridPts$Var2)))
+```
+
+
+## Generating Points in the 100 by 100 by zMax box
+
+Use `runif` to generate 200 points in the 3-dimensional region
+
+```{r, error = TRUE}
+x200 = runif(200, min = 0, max = 100)
+y200 = runif(200, min = 0, max = 100)
+z200 = runif(200, min = 0, max = zMax)
+```
+
+Figure out which points have a z-value under the population density function.  Use a logical expression to do this
+
+```{r}
+keep = z200[nodeDensity(x200, y200) > z200]
+```
+
+
+How many points are kept?
+```{r}
+sum(keep)
+```
+
+If half the points are kept then you probably want to generate twice as many (or more) in order to get enough. 
+
+You will want to develop this code into the `genNodes` function.
+Note that to be sure that you return `n` (x,y) points (no more and no less) you will want to have a mechanism to continue to generate points until you have `n` or more, and then return `n` of them. 
