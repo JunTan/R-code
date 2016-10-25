@@ -40,7 +40,7 @@ findTranMat = function (mat, R){
 }
 
 getEigen2 = function (mat){
-  m= eigs(mat, 2 , which = "LM", sigma= NULL, opt = list(retvec = FALSE))
+  m= eigen(mat)
   
   return(m$values[2])
 }

@@ -1,0 +1,169 @@
+---
+title: "Project.Rmd"
+output: html_document
+---
+
+Part 1
+
+```{r genNodes}
+source("http://www.stat.berkeley.edu/users/nolan/data/nodeDensity.R")
+genNodes = function(n) {
+  x_new = c()
+  y_new = c()
+  while (length(x_new) < n & length(y_new) < n) {
+    x = runif(n, min = 0, max = 100)
+    y = runif(n, min = 0, max = 100)
+    gridPts = expand.grid(x, y)
+    zMax = ceiling(max(nodeDensity(gridPts$Var1, gridPts$Var2)))
+    z = runif(n, min = 0, max = zMax)
+    keep = nodeDensity(x, y) > z
+
+    x_new = c(x_new, x[keep])
+
+    y_new = c(y_new, y[keep])
+  }
+  return(matrix(c(x_new[1:n], y_new[1:n]), ncol = 2, byrow = FALSE))
+}
+```
+
+
+Part 2
+
+```{r findRc}
+
+library(RSpectra)
+
+findTranMat = function (mat, R){
+  m = ifelse(apply(mat, 1, '>', R), 0, 1)
+  ifelse(apply(mat,1,'<=', R), 1/colSums(m), 0)
+}
+
+getEigen2 = function (mat){
+  m= eigs(mat, 2 , which = "LM", sigma= NULL, opt = list(retvec = FALSE))
+
+  return(m$values[2])
+}
+
+findRange = function(mat){
+  p = apply(mat, 1, function(x) max(x[x>0]))
+  q = apply(mat, 1, function(x) min(x[x>0]))
+
+  return(as.numeric(c(max(q), min(p))))
+}
+
+findRc = function (nodes, tol = 0.05){
+  distBNodes = as.matrix(dist(nodes))
+  Range = findRange (distBNodes)
+  R1 = max(Range)
+  R2 = min(Range)
+
+  while(abs(R1 - R2)> tol){
+    R0 = median(c(R1, R2))
+    transR = findTranMat(distBNodes, R0)
+    m = getEigen2(transR)
+
+    if (Mod(m) < 1){
+      R1 = R0
+    } else R2 = R0
+  }
+    return(R1)
+}
+```
+
+
+Part 3
+
+```{r Simulation}
+
+n = seq(from = 35, to = 100, by = 5)
+set.seed(12345)
+NodeSimul = replicate(1000, lapply(n, genNodes))
+RcSimul = sapply(NodeSimul, findRc)
+
+#Behavior of Rc
+
+
+#QQ Plot to explore distribution of Rc
+plot(quantile(RcSimul, probs = seq(0.001, 0.999, by = 0.001)),
+     xlab = "Theoratical Quantiles", ylab = "Sample Quantile")
+```
+
+
+```{r Plot Network}
+library(reshape)
+
+#Study network with 35 nodes
+set.seed(12345)
+NodeforPlot = replicate(1000, lapply(35,genNodes))
+RcforPlot = sapply(NodeforPlot, findRc)
+
+# Subset coordinates of 4 different Rc's
+MinRcNode <- data.frame(NodeforPlot[[which(RcforPlot == min(RcforPlot))]])
+MaxRcNode <-data.frame(NodeforPlot[[which(RcforPlot == max(RcforPlot))]])
+MeanRcNode <- data.frame(NodeforPlot[[which.min(abs(RcforPlot - mean(RcforPlot)))]])
+MedRcNode <-data.frame(NodeforPlot[[which.min(abs(RcforPlot - median(RcforPlot)))]])
+
+#Dataframe including distance and position of coordinates for MinRc
+DistMinRc <- data.frame(melt(as.matrix(dist(MinRcNode), varnames = c("start", "end"))))
+DistMinRc<- data.frame(DistMinRc[!(DistMinRc$value > findRc(MinRcNode)),])
+
+#Dataframe including distance and position of coordinates for MaxRc
+DistMaxRc <- data.frame(melt(as.matrix(dist(MaxRcNode), varnames = c("start", "end"))))
+DistMaxRc<- data.frame(DistMaxRc[!(DistMaxRc$value > findRc(MaxRcNode)),])
+
+#Dataframe including distance and position of coordinates for MeanRc
+DistMeanRc <- data.frame(melt(as.matrix(dist(MeanRcNode), varnames = c("start", "end"))))
+DistMeanRc<- data.frame(DistMeanRc[!(DistMeanRc$value > findRc(MeanRcNode)),])
+
+#Dataframe including distance and position of coordinates for MedianRc
+DistMedRc <- data.frame(melt(as.matrix(dist(MedRcNode), varnames = c("start", "end"))))
+DistMedRc<- data.frame(DistMedRc[!(DistMedRc$value > findRc(MedRcNode)),])
+
+```
+
+```{r Plotting min}
+#Graph Min
+library(ggplot2)
+
+Xmin <- MinRcNode[ ,1][DistMinRc$X1]
+XminEnd <- MinRcNode[ ,1][DistMinRc$X2]
+Ymin <- MinRcNode[ ,2][DistMinRc$X1]
+YminEnd <- MinRcNode[ ,2][DistMinRc$X2]
+ggplot() + geom_point(data = MinRcNode, aes(x = MinRcNode[,1], y = MinRcNode[,2])) + 
+  geom_segment(aes(x = Xmin, y = Ymin, xend = XminEnd, yend = YminEnd)) +
+  xlab("X Coordinate") + ylab("Y Coordinate")
+```
+
+```{r Plotting Max}
+#Graph Max
+Xmax <- MaxRcNode[ ,1][DistMaxRc$X1]
+XmaxEnd <- MaxRcNode[ ,1][DistMaxRc$X2]
+Ymax <- MaxRcNode[ ,2][DistMaxRc$X1]
+YmaxEnd <- MaxRcNode[ ,2][DistMaxRc$X2]
+ggplot() + geom_point(data = MaxRcNode, aes( x= MaxRcNode[,1], y = MaxRcNode[,2])) + 
+  geom_segment(aes(x = Xmax, y = Ymax, xend = XmaxEnd, yend = YmaxEnd))+
+  xlab("X Coordinate") + ylab("Y Coordinate")
+```
+
+```{r Plotting Mean}
+#Graph Mean
+Xmean <- MeanRcNode[ ,1][DistMeanRc$X1]
+XmeanEnd <- MeanRcNode[ ,1][DistMeanRc$X2]
+Ymean <- MeanRcNode[ ,2][DistMeanRc$X1]
+YmeanEnd <- MeanRcNode[ ,2][DistMeanRc$X2]
+ggplot() + geom_point(data = MeanRcNode, aes(x = MeanRcNode[,1], y = MeanRcNode[,2])) + 
+  geom_segment(aes(x = Xmean, y = Ymean, xend = XmeanEnd, yend = YmeanEnd))+
+  xlab("X Coordinate") + ylab("Y Coordinate")
+```
+
+```{r Plotting Median}
+#Graph Median
+Xmed <- MedRcNode[ ,1][DistMedRc$X1]
+XmedEnd <- MedRcNode[ ,1][DistMedRc$X2]
+Ymed <- MedRcNode[ ,2][DistMedRc$X1]
+YmedEnd <- MedRcNode[ ,2][DistMedRc$X2]
+ggplot() + geom_point(data = MedRcNode, aes(x = MedRcNode[,1], y = MedRcNode[,2])) + 
+  geom_segment(aes(x = Xmed, y = Ymed, xend = XmedEnd, yend = YmedEnd))+
+  xlab("X Coordinate") + ylab("Y Coordinate")
+
+```
