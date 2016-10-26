@@ -30,7 +30,6 @@ genNodes = function(n) {
 Part 2
 
 ```{r findRc}
-
 library(RSpectra)
 
 findTranMat = function (mat, R){
@@ -39,7 +38,7 @@ findTranMat = function (mat, R){
 }
 
 getEigen2 = function (mat){
-  m= eigs(mat, 2 , which = "LM", sigma= NULL, opt = list(retvec = FALSE))
+  m= eigen(mat)
 
   return(m$values[2])
 }
@@ -54,19 +53,23 @@ findRange = function(mat){
 findRc = function (nodes, tol = 0.05){
   distBNodes = as.matrix(dist(nodes))
   Range = findRange (distBNodes)
-  R1 = max(Range)
-  R2 = min(Range)
+  R_max = max(Range)
+  R_min = min(Range)
 
-  while(abs(R1 - R2)> tol){
-    R0 = median(c(R1, R2))
-    transR = findTranMat(distBNodes, R0)
-    m = getEigen2(transR)
+  while(abs(R_max - R_min) > tol){
+    R_mid = median(c(R_min, R_max))
+    transR = findTranMat(distBNodes, R_mid)
+    eigenvalue2 = getEigen2(transR)
 
-    if (Mod(m) < 1){
-      R1 = R0
-    } else R2 = R0
+    if (all.equal(Mod(eigenvalue2), 1) < tol){
+      R_max = R_mid
+    } else R_min = R_mid
+    
+    if (abs(R_max - R_min) <= tol){
+      return(R_mid)
+    }
   }
-    return(R1)
+  return(R_max)
 }
 ```
 
@@ -131,7 +134,7 @@ Ymin <- MinRcNode[ ,2][DistMinRc$X1]
 YminEnd <- MinRcNode[ ,2][DistMinRc$X2]
 ggplot() + geom_point(data = MinRcNode, aes(x = MinRcNode[,1], y = MinRcNode[,2])) + 
   geom_segment(aes(x = Xmin, y = Ymin, xend = XminEnd, yend = YminEnd)) +
-  xlab("X Coordinate") + ylab("Y Coordinate")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Min")
 ```
 
 ```{r Plotting Max}
@@ -142,7 +145,7 @@ Ymax <- MaxRcNode[ ,2][DistMaxRc$X1]
 YmaxEnd <- MaxRcNode[ ,2][DistMaxRc$X2]
 ggplot() + geom_point(data = MaxRcNode, aes( x= MaxRcNode[,1], y = MaxRcNode[,2])) + 
   geom_segment(aes(x = Xmax, y = Ymax, xend = XmaxEnd, yend = YmaxEnd))+
-  xlab("X Coordinate") + ylab("Y Coordinate")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Max")
 ```
 
 ```{r Plotting Mean}
@@ -153,7 +156,7 @@ Ymean <- MeanRcNode[ ,2][DistMeanRc$X1]
 YmeanEnd <- MeanRcNode[ ,2][DistMeanRc$X2]
 ggplot() + geom_point(data = MeanRcNode, aes(x = MeanRcNode[,1], y = MeanRcNode[,2])) + 
   geom_segment(aes(x = Xmean, y = Ymean, xend = XmeanEnd, yend = YmeanEnd))+
-  xlab("X Coordinate") + ylab("Y Coordinate")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Mean")
 ```
 
 ```{r Plotting Median}
@@ -164,6 +167,6 @@ Ymed <- MedRcNode[ ,2][DistMedRc$X1]
 YmedEnd <- MedRcNode[ ,2][DistMedRc$X2]
 ggplot() + geom_point(data = MedRcNode, aes(x = MedRcNode[,1], y = MedRcNode[,2])) + 
   geom_segment(aes(x = Xmed, y = Ymed, xend = XmedEnd, yend = YmedEnd))+
-  xlab("X Coordinate") + ylab("Y Coordinate")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Median")
 
 ```
