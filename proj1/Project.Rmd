@@ -61,7 +61,7 @@ findRc = function (nodes, tol = 0.05){
     transR = findTranMat(distBNodes, R_mid)
     eigenvalue2 = getEigen2(transR)
 
-    if (all.equal(Mod(eigenvalue2), 1) < tol){
+    if (all.equal(1, Mod(eigenvalue2)) < tol){
       R_max = R_mid
     } else R_min = R_mid
     
