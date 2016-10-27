@@ -64,7 +64,7 @@ findRc = function (nodes, tol = 0.05){
     transR = findTranMat(distBNodes, R_mid)
     eigenvalue2 = getEigen2(transR)
 
-    if (all.equal(Mod(eigenvalue2), 1) > tol){
+    if (all.equal(Mod(eigenvalue2), 1) != TRUE){
       R_max = R_mid
     } else R_min = R_mid
   }
@@ -111,7 +111,7 @@ library(ggplot2)
 #Study network with 35 nodes
 
 set.seed(12345)
-NodeforPlot = replicate(1000, lapply(55,genNodes))
+NodeforPlot = replicate(1000, lapply(75,genNodes))
 RcforPlot = sapply(NodeforPlot, findRc)
 
 # Subset coordinates of 4 different Rc's
@@ -126,7 +126,7 @@ MedRcNode <-data.frame(NodeforPlot[[which.min(abs(RcforPlot - median(RcforPlot))
 ```{r plotting min}
 #Dataframe including distance and position of coordinates for MinRc
 DistMinRc <- data.frame(melt(as.matrix(dist(MinRcNode), varnames = c("start", "end"))))
-DistMinRc<- DistMinRc[DistMinRc$value <= (min(RcforPlot)+0.05),]
+DistMinRc<- DistMinRc[DistMinRc$value <= (min(RcforPlot)+2),]
 
 #Vectors for segment
 Xmin <- MinRcNode[DistMinRc$X1 ,1]
