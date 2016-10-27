@@ -7,9 +7,10 @@ Authors:
 "Jun Tan 26370084", "Peirang Xu 25117973","Roozbeh Faghihi Moghadam 25765752"
 
 Part 1
-
 ```{r genNodes}
 source("http://www.stat.berkeley.edu/users/nolan/data/nodeDensity.R")
+
+#Generate n (x,y) coordinates
 genNodes = function(n) {
   x_new = c()
   y_new = c()
@@ -31,21 +32,23 @@ genNodes = function(n) {
 
 
 Part 2
-
 ```{r findRc}
 library(RSpectra)
 
+#Compute the transition matrix for the given mat
 findTranMat = function (mat, R){
   m = ifelse(apply(mat, 1, '>', R), 0, 1)
   ifelse(apply(mat,1,'<=', R), 1/colSums(m), 0)
 }
 
+#Find the second eigenvalue for given mat
 getEigen2 = function (mat){
   m= eigen(mat)
 
   return(m$values[2])
 }
 
+#Find the range of distance
 findRange = function(mat){
   p = apply(mat, 1, function(x) max(x[x>0]))
   q = apply(mat, 1, function(x) min(x[x>0]))
@@ -55,6 +58,7 @@ findRange = function(mat){
 
 findRc = function (nodes, tol = 0.05){
   distBNodes = as.matrix(dist(nodes))
+  #Initail the range for Rc
   Range = findRange (distBNodes)
   R_max = max(Range)
   R_min = min(Range)
@@ -72,9 +76,7 @@ findRc = function (nodes, tol = 0.05){
 }
 ```
 
-
 Part 3
-
 ```{r simulation}
 library(ggplot2)
 
@@ -98,18 +100,15 @@ plot(quantile(unlist(RcSimul), probs = seq(0.001, 0.999, by = 0.001)),
      xlab = "Theoratical Quantiles", ylab = "Sample Quantile")
 ```
 
-a) As we see in density function, when number of nodes increase Rc decreases.
+a) As we see in density function, when number of nodes increase Rc decreases. Thus we know that the more nodes we have, the smaller Rc is needed in order to make them all connected.
 
-b) From density function and qqplot, we can iterpret that Rc distribution is right tailed.
-
+b) From density function and qqplot, we can iterpret that Rc distribution is right tailed, which matches our explanation in part(a). And from the quantile plot we can tell that the distribution of Rc grows exponentially as the number of nodes gets larger.
 
 c)
 ```{r plot network}
 library(reshape)
-library(ggplot2)
 
-#Study network with 35 nodes
-
+#Study network with 75 nodes
 set.seed(12345)
 NodeforPlot = replicate(1000, lapply(75,genNodes))
 RcforPlot = sapply(NodeforPlot, findRc)
@@ -126,7 +125,7 @@ MedRcNode <-data.frame(NodeforPlot[[which.min(abs(RcforPlot - median(RcforPlot))
 ```{r plotting min}
 #Dataframe including distance and position of coordinates for MinRc
 DistMinRc <- data.frame(melt(as.matrix(dist(MinRcNode), varnames = c("start", "end"))))
-DistMinRc<- DistMinRc[DistMinRc$value <= (min(RcforPlot)+2),]
+DistMinRc<- DistMinRc[DistMinRc$value <= min(RcforPlot),]
 
 #Vectors for segment
 Xmin <- MinRcNode[DistMinRc$X1 ,1]
@@ -137,7 +136,7 @@ YminEnd <- MinRcNode[DistMinRc$X2 ,2]
 #Graph Min
 ggplot() + geom_point(data = MinRcNode, aes(x = MinRcNode[,1], y = MinRcNode[,2])) + 
   geom_segment(aes(x = Xmin, y = Ymin, xend = XminEnd, yend = YminEnd)) +
-  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Min")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot of Min Rc")
 ```
 
 ```{r plotting max}
@@ -154,12 +153,11 @@ YmaxEnd <- MaxRcNode[ ,2][DistMaxRc$X2]
 #Graph Max
 ggplot() + geom_point(data = MaxRcNode, aes( x= MaxRcNode[,1], y = MaxRcNode[,2])) + 
   geom_segment(aes(x = Xmax, y = Ymax, xend = XmaxEnd, yend = YmaxEnd))+
-  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Max")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot of Max Rc")
 ```
 
 
 ```{r plotting mean}
-
 #Dataframe including distance and position of coordinates for MeanRc
 DistMeanRc <- data.frame(melt(as.matrix(dist(MeanRcNode), varnames = c("start", "end"))))
 DistMeanRc<- DistMeanRc[DistMeanRc$value <= findRc(MeanRcNode),]
@@ -173,11 +171,10 @@ YmeanEnd <- MeanRcNode[ ,2][DistMeanRc$X2]
 #Graph Mean
 ggplot() + geom_point(data = MeanRcNode, aes(x = MeanRcNode[,1], y = MeanRcNode[,2])) + 
   geom_segment(aes(x = Xmean, y = Ymean, xend = XmeanEnd, yend = YmeanEnd))+
-  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Mean")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot of Mean Rc")
 ```
 
 ```{r plotting median}
-
 #Dataframe including distance and position of coordinates for MedianRc
 DistMedRc <- data.frame(melt(as.matrix(dist(MedRcNode), varnames = c("start", "end"))))
 DistMedRc<- DistMedRc[DistMedRc$value <= (findRc(MedRcNode) + 0.05),]
@@ -191,6 +188,6 @@ YmedEnd <- MedRcNode[ ,2][DistMedRc$X2]
 #Graph Median
 ggplot() + geom_point(data = MedRcNode, aes(x = MedRcNode[,1], y = MedRcNode[,2])) + 
   geom_segment(aes(x = Xmed, y = Ymed, xend = XmedEnd, yend = YmedEnd))+
-  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot Median")
+  xlab("X Coordinate") + ylab("Y Coordinate") + ggtitle("Plot with Median Rc")
 
 ```
