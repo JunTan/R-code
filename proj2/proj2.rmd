@@ -1,0 +1,58 @@
+---
+title: "E-project"
+output: html_document
+Authors: Jun Tan
+---
+
+Step 1: DATA WRANGLING
+
+Merging dataset1 and dataset2: (Peirang Xu)
+
+```{r}
+data1 = 
+
+```
+
+Merging data1 and dataset3: (Qing Guo)
+
+```{r}
+data2 = 
+
+```
+
+Merging data2 and dataset4: (Dennis)
+
+```{r}
+data3 = 
+
+```
+
+Merging data3 and dataset5: (Jun Tan)
+
+```{r}
+data4 = 
+
+```
+
+Merging data4 and dataset6: (Gong Ze)
+
+```{r}
+big_date = 
+
+```
+
+Step 2: EXPLORATION (Qing Guo, Peirang Xu)
+
+```{r}
+
+```
+
+Step 3: MAP MAKING (Qing Guo, Peirang Xu)
+```{r}
+
+```
+
+Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
+```{r}
+
+```
