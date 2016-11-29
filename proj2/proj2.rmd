@@ -12,10 +12,12 @@ Merging dataset1 and dataset2: (Peirang Xu)
 #2016 Voting Data
 mydata1 = read.csv("http://www.stat.berkeley.edu/users/nolan/data/voteProject/2016_US_County_Level_Presidential_Results.csv")
 mydata1 = as.data.frame(mydata1)
-mydata1 = mydata1[, c("state_abbr","county_name","votes_dem","per_dem","votes_gop","per_gop")]
 mydata1$state_names = state.name[match(mydata1$state_abbr, state.abb)]
-colnames(mydata1) = c("state_abbr","county_name","votes_dem16","per_dem16","votes_gop16","per_gop16", "state_names")
+mydata1 =mydata1[,c("state_names","county_name","votes_dem","per_dem","votes_gop","per_gop")]
+colnames(mydata1) = c("state_names","county_name","vote_count_dem16","vote_percent_dem16","vote_count_gop16","vote_percent_gop16")
 mydata1 = data.frame(lapply(mydata1, as.character), stringsAsFactors = FALSE)
+mydata1$county_name = gsub("County|city|City","", mydata1$county_name)
+mydata1$county_name = sub(" ", "", mydata1$county_name)
 
 #2012 Voting Data
 require(XML)
@@ -31,25 +33,25 @@ mydata2 = for(i in 1:length(urls)){
 }
 getData <- function(x) {
   county_name = xpathSApply(x, '//th[@class = "results-county"]/text()',xmlValue)[-1]
-  votes_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class ="results-popular"]',xmlValue)
-  per_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class = "results-percentage"]',xmlValue) 
-  votes_dem12 = xpathSApply(x, '//tr[@class = "party-democrat" or @class="party-democrat race-winner"]/td[@class ="results-popular"]',xmlValue)
-  per_dem12 = xpathSApply(x, '//tr[@class = "party-democrat" or @class ="party-democrat race-winner"]/td[@class = "results-percentage"]', xmlValue)
-  df_col <- data.frame(county_name, votes_gop12, per_gop12, votes_dem12, per_dem12)
+  vote_count_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class ="results-popular"]',xmlValue)
+  vote_percent_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class = "results-percentage"]',xmlValue) 
+  vote_count_dem12 = xpathSApply(x, '//tr[@class = "party-democrat" or @class="party-democrat race-winner"]/td[@class ="results-popular"]',xmlValue)
+  vote_percent_dem12 = xpathSApply(x, '//tr[@class = "party-democrat" or @class ="party-democrat race-winner"]/td[@class = "results-percentage"]', xmlValue)
+  df_col <- data.frame(county_name, vote_count_gop12, vote_percent_gop12, vote_count_dem12, vote_percent_dem12)
   return(df_col)
 }
 getData2 = lapply(vtRoot, getData)
 rows = sapply(getData2, nrow)
 state_names = as.character(rep(state.name, rows))
 getData2 = do.call(rbind, getData2)
-getData2$county_name = paste(getData2$county_name, "County")
 mydata2 = cbind(state_names, getData2)
 mydata2 = data.frame(lapply(mydata2, as.character), stringsAsFactors = FALSE)
+mydata2$county_name = sub(" ", "", mydata2$county_name)
 
 #merge two dataframe
-d2_county_name = mydata2$county_name
-mydata2$county_name = sub("  ", " ", d2_county_name)
-data1 = merge(mydata1, mydata2, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_names"))
+data1 = merge(mydata1, mydata2, by = c("state_names", "county_name"), all = TRUE)
+
+data1
 ```
 
 Merging data1 and dataset3: (Qing Guo)
@@ -75,6 +77,8 @@ B01003 = B01003[c(-1,-2)]
 ```
 
 ```{r}
+# data process for B01003
+
 # Split county names and state names
 county_states = sapply(B01003$GEO.display.label, as.character)
 county_states = county_states[!is.na(county_states)]
