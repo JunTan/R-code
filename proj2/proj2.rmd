@@ -10,11 +10,14 @@ Merging dataset1 and dataset2: (Peirang Xu)
 
 ```{r}
 #2016 Voting Data
+require(scales)
 mydata1 = read.csv("http://www.stat.berkeley.edu/users/nolan/data/voteProject/2016_US_County_Level_Presidential_Results.csv")
 mydata1 = as.data.frame(mydata1)
 mydata1$state_names = state.name[match(mydata1$state_abbr, state.abb)]
-mydata1 =mydata1[,c("state_names","county_name","votes_dem","per_dem","votes_gop","per_gop")]
-colnames(mydata1) = c("state_names","county_name","vote_count_dem16","vote_percent_dem16","vote_count_gop16","vote_percent_gop16")
+mydata1 =mydata1[,c("state_names","county_name","votes_gop","per_gop","votes_dem","per_dem")]
+colnames(mydata1) = c("state_names","county_name","vote_count_gop16","vote_percent_gop16","vote_count_dem16","vote_percent_dem16")
+mydata1$vote_percent_dem16 = percent(mydata1$vote_percent_dem16)
+mydata1$vote_percent_gop16 = percent(mydata1$vote_percent_gop16)
 mydata1 = data.frame(lapply(mydata1, as.character), stringsAsFactors = FALSE)
 mydata1$county_name = gsub("County|city|City","", mydata1$county_name)
 mydata1$county_name = sub(" ", "", mydata1$county_name)
@@ -31,6 +34,7 @@ mydata2 = for(i in 1:length(urls)){
   vtDoc[[i]] = xmlParse(urls[i])
   vtRoot[[i]] = xmlRoot(vtDoc[[i]])
 }
+
 getData <- function(x) {
   county_name = xpathSApply(x, '//th[@class = "results-county"]/text()',xmlValue)[-1]
   vote_count_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class ="results-popular"]',xmlValue)
@@ -40,6 +44,7 @@ getData <- function(x) {
   df_col <- data.frame(county_name, vote_count_gop12, vote_percent_gop12, vote_count_dem12, vote_percent_dem12)
   return(df_col)
 }
+
 getData2 = lapply(vtRoot, getData)
 rows = sapply(getData2, nrow)
 state_names = as.character(rep(state.name, rows))
@@ -73,7 +78,6 @@ Merging data3 and dataset5: (Jun Tan)
 ```{r}
 B01003 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv",head=TRUE,sep=",")
 B01003 = B01003[c(-1,-2)]
-
 ```
 
 ```{r}
@@ -83,10 +87,12 @@ B01003 = B01003[c(-1,-2)]
 county_states = sapply(B01003$GEO.display.label, as.character)
 county_states = county_states[!is.na(county_states)]
 county_states = strsplit(county_states, ",")
-B01003$county_name = sapply(county_states, function(x) x[1])
+county_names = sapply(county_states, function(x) x[1])
+county_names = strsplit(county_names, "County")
+B01003$county_name = sapply(county_names, function(x) x[1])
 B01003$state_name = sapply(county_states, function(x) x[2])
 
-# Rearrange the data frame, each county-state pair in a row with population stats
+# Extract the data frame, each county-state pair in a row with population stats
 col_names =  c("county_name", "state_name", "POPGROUP.display.label", "HD01_VD01", "HD02_VD01")
 B01003_popgroup1 = B01003[B01003$POPGROUP.id == 1, col_names]
 B01003_popgroup2 = B01003[B01003$POPGROUP.id == 2, col_names]
@@ -101,7 +107,7 @@ B01003_clean = merge(x = B01003_popgroup1_2, y = B01003_popgroup4, by.x = c("cou
 filter = sapply(B01003_clean$county_name, is.na)
 B01003_clean= B01003_clean[!filter,]
 
-# Cleant the final dataframe
+# Clean the final dataframe
 B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD02_VD01.x", "HD01_VD01.y", "HD02_VD01.y", "HD01_VD01", "HD02_VD01")]
 colnames(B01003_clean) = c("county_name", "state_name", "total population", "Margin of Error-total", "white population", "Margin of Error-white", "black population", "Margin of Error-black")
 #data4 = 
