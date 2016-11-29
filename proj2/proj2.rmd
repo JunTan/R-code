@@ -1,7 +1,7 @@
 ---
 title: "E-project"
 output: html_document
-Authors: Jun Tan   Peirang Xu (SID:25117973)
+Authors: Jun Tan (SID:26370084)   Peirang Xu (SID:25117973)
 ---
 
 Step 1: DATA WRANGLING
@@ -69,7 +69,38 @@ data3 =
 Merging data3 and dataset5: (Jun Tan)
 
 ```{r}
-data4 = 
+B01003 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv",head=TRUE,sep=",")
+B01003 = B01003[c(-1,-2)]
+
+```
+
+```{r}
+# Split county names and state names
+county_states = sapply(B01003$GEO.display.label, as.character)
+county_states = county_states[!is.na(county_states)]
+county_states = strsplit(county_states, ",")
+B01003$county_name = sapply(county_states, function(x) x[1])
+B01003$state_name = sapply(county_states, function(x) x[2])
+
+# Rearrange the data frame, each county-state pair in a row with population stats
+col_names =  c("county_name", "state_name", "POPGROUP.display.label", "HD01_VD01", "HD02_VD01")
+B01003_popgroup1 = B01003[B01003$POPGROUP.id == 1, col_names]
+B01003_popgroup2 = B01003[B01003$POPGROUP.id == 2, col_names]
+B01003_popgroup4 = B01003[B01003$POPGROUP.id == 4, col_names]
+
+# Merge different stats
+B01003_popgroup1_2 = merge(x = B01003_popgroup1, y = B01003_popgroup2, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
+filter = sapply(B01003_popgroup1_2$county_name, is.na)
+B01003_popgroup1_2 = B01003_popgroup1_2[!filter,]
+
+B01003_clean = merge(x = B01003_popgroup1_2, y = B01003_popgroup4, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
+filter = sapply(B01003_clean$county_name, is.na)
+B01003_clean= B01003_clean[!filter,]
+
+# Cleant the final dataframe
+B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD02_VD01.x", "HD01_VD01.y", "HD02_VD01.y", "HD01_VD01", "HD02_VD01")]
+colnames(B01003_clean) = c("county_name", "state_name", "total population", "Margin of Error-total", "white population", "Margin of Error-white", "black population", "Margin of Error-black")
+#data4 = 
 
 ```
 
