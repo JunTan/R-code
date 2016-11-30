@@ -76,21 +76,38 @@ data3 =
 Merging data3 and dataset5: (Jun Tan)
 
 ```{r}
+# Read in data
 B01003 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv",head=TRUE,sep=",")
 B01003 = B01003[c(-1,-2)]
+
+DP02 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP02.csv",head=TRUE,sep=",")
+DP02 = DP02[c("GEO.display.label", "HC03_VC86", "HC03_VC87", "HC03_VC88", "HC03_VC89", "HC03_VC90", "HC03_VC91", "HC03_VC93", "HC03_VC94")]
 ```
+
+
+```{r}
+# Function for extract state and county/city from a vector of string. Return values have the first half as county, the bottom half as state
+get_county_state = function(county_states) {
+  county_states = sapply(county_states, as.character)
+  county_states = county_states[!is.na(county_states)]
+  county_states = strsplit(county_states, ",")
+  county_names = sapply(county_states, function(x) x[1])
+  county_names = strsplit(county_names, "County")
+  county_names = sapply(county_names, function(x) x[1])
+  state_names = sapply(county_states, function(x) x[2])
+  return(c(county_names, state_names))
+}
+```
+
 
 ```{r}
 # data process for B01003
 
 # Split county names and state names
-county_states = sapply(B01003$GEO.display.label, as.character)
-county_states = county_states[!is.na(county_states)]
-county_states = strsplit(county_states, ",")
-county_names = sapply(county_states, function(x) x[1])
-county_names = strsplit(county_names, "County")
-B01003$county_name = sapply(county_names, function(x) x[1])
-B01003$state_name = sapply(county_states, function(x) x[2])
+split_county_states = get_county_state(B01003$GEO.display.label)
+len = length(split_county_states)
+B01003$county_name = split_county_states[0:(len/2)]
+B01003$state_name = split_county_states[(len/2+1):len]
 
 # Extract the data frame, each county-state pair in a row with population stats
 col_names =  c("county_name", "state_name", "POPGROUP.display.label", "HD01_VD01", "HD02_VD01")
@@ -108,10 +125,30 @@ filter = sapply(B01003_clean$county_name, is.na)
 B01003_clean= B01003_clean[!filter,]
 
 # Clean the final dataframe
-B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD02_VD01.x", "HD01_VD01.y", "HD02_VD01.y", "HD01_VD01", "HD02_VD01")]
-colnames(B01003_clean) = c("county_name", "state_name", "total population", "Margin of Error-total", "white population", "Margin of Error-white", "black population", "Margin of Error-black")
-#data4 = 
+B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD01_VD01.y", "HD02_VD01")]
+colnames(B01003_clean) = c("county_name", "state_name", "total population", "white population", "black population")
+```
 
+
+```{r}
+# Process DP02
+colnames(DP02) = c("county_states", "% 9-12th grade no diploma", "% high school grad(eq)", "% some college, no deg", "% AS deg", "% BS", "% MS/PHD", "% of % high school of higher", "% of % BS or higher")
+split_county_states = get_county_state(DP02$county_states)
+len = length(split_county_states)
+DP02$county_name = split_county_states[0:(len/2)]
+DP02$state_name = split_county_states[(len/2+1):len]
+
+# Clean DP02
+DP02_clean = DP02[c("county_name", "state_name", "% 9-12th grade no diploma", "% high school grad(eq)", "% some college, no deg", "% AS deg", "% BS", "% MS/PHD", "% of % high school of higher", "% of % BS or higher")]
+```
+
+```{r}
+# Process DP03
+
+```
+
+```{r}
+#data4 = 
 ```
 
 Merging data4 and dataset6: (Gong Ze)
