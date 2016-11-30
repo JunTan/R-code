@@ -20,7 +20,7 @@ mydata1$vote_percent_dem16 = percent(mydata1$vote_percent_dem16)
 mydata1$vote_percent_gop16 = percent(mydata1$vote_percent_gop16)
 mydata1 = data.frame(lapply(mydata1, as.character), stringsAsFactors = FALSE)
 mydata1$county_name = gsub("County|city|City","", mydata1$county_name)
-mydata1$county_name = sub(" ", "", mydata1$county_name)
+mydata1$county_name = sub("  ", " ", mydata1$county_name)
 
 #2012 Voting Data
 require(XML)
@@ -51,7 +51,7 @@ state_names = as.character(rep(state.name, rows))
 getData2 = do.call(rbind, getData2)
 mydata2 = cbind(state_names, getData2)
 mydata2 = data.frame(lapply(mydata2, as.character), stringsAsFactors = FALSE)
-mydata2$county_name = sub(" ", "", mydata2$county_name)
+mydata2$county_name = sub("  ", " ", mydata2$county_name)
 
 #merge two dataframe
 data1 = merge(mydata1, mydata2, by = c("state_names", "county_name"), all = TRUE)
@@ -98,6 +98,7 @@ get_county_state = function(county_states) {
   county_names = strsplit(county_names, "County")
   county_names = sapply(county_names, function(x) x[1])
   state_names = sapply(county_states, function(x) x[2])
+  state_names = sub(" ", "", state_names)
   return(c(county_names, state_names))
 }
 
@@ -178,7 +179,7 @@ all_3 = all_3[!filter,]
 ```
 
 ```{r}
-data4 = merge(x = data3, y = all_3, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all = TRUE)
+data4 = merge(x = data1, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
 filter = sapply(data4$county_name, is.na)
 data4 = data4[!filter,]
 ```
