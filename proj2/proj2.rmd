@@ -115,7 +115,23 @@ data2 = merge(mydata3, data1, by = c("state_names", "county_name"), all = TRUE)
 Merging data2 and dataset4: (Dennis)
 
 ```{r}
-data3 = 
+#reading election results of 2004 into data frame mydata4 
+mydata4 = read.table("http://www.stat.berkeley.edu/~nolan/data/voteProject/countyVotes2004.txt", header = TRUE)
+mydata4$countyName = as.character(mydata4$countyName)
+mydata4$states = gsub(",[a-z ]*", "", mydata4$countyName)
+countyName = gsub("[a-z ]*,", "", mydata4$countyName)
+countyName = sapply(countyName, function(x) paste(x, " ", sep = ""))
+mydata4$countyName = countyName
+mydata4 = mydata4[, c(4, 1, 2, 3)]
+names(mydata4) = c("state_names", "county_name", "vote_count_gop04", "vote_count_dem04")
+sum = mydata4$vote_count_gop04 + mydata4$vote_count_dem04
+mydata4$vote_percent_gop04 = percent(mydata4$vote_count_gop04/sum)
+mydata4$vote_percent_dem04 = percent(mydata4$vote_count_dem04/sum)
+
+#merging mydata4 with data2
+data2$state_names = tolower(data2$state_names)
+data2$county_name = tolower(data2$county_name)
+data3 = merge(data2, mydata4, by = c("state_names", "county_name"), all = TRUE)
 
 ```
 
@@ -199,7 +215,7 @@ DP02_clean = DP02[c("county_name", "state_name", names[2:length(names)])]
 # Process DP03
 names = c("county_states", 
           "% Agriculture, forestry, fishing and hunting, and mining", 
-          "% Construction", "% Manufacturing", "% Retail trade",                    "% Information", 
+          "% Construction", "% Manufacturing", "% Retail trade", "% Information", 
           "% Professional, scientific, and management, and administrative and waste management services", 
           "% Educational services, and health care and social assistance",
           "% Public administration")
@@ -214,6 +230,7 @@ wanted_coln = names[2:length(names)]
 DP03_clean = DP03[c("county_name", "state_name", wanted_coln)]
 ```
 
+
 ```{r}
 # Merge B01003_clean, DP03_clean and DP02_clean
 inter1 = merge(x = B01003_clean, y = DP02_clean, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all = TRUE)
@@ -224,8 +241,12 @@ filter = sapply(all_3$county_name, is.na)
 all_3 = all_3[!filter,]
 ```
 
+
 ```{r}
-data4 = merge(x = data2, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
+# Merge my dataframe with the master dataframe
+all_3$state_name = tolower(all_3$state_name)
+all_3$county_name = tolower(all_3$county_name)
+data4 = merge(x = data3, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
 filter = sapply(data4$county_name, is.na)
 data4 = data4[!filter,]
 ```
