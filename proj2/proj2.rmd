@@ -279,18 +279,43 @@ dataset6$state_names = tolower(dataset6$state_names)
 dataset6$countyname = gsub("county", "", tolower(dataset6$countyname))
 dataset6$countyname = gsub("\n[ ]*", "", dataset6$countyname)
 big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names"), by.y = c("countyname", "state_names"), all.x = TRUE)
-
 ```
 
+
 ```{r}
-# clean the final dataframe to make the data with all none-na stats
-df_names = names(big_data)
-filter = sapply(big_data[1], function(x) !is.na(x))
-for (name in df_names[2:(length(df_names))]){
-  inter_filter = sapply(big_data[name], function(x) !is.na(x))
-  filter = filter & inter_filter
+# clean the given dataframe
+# return the dataframe with rows that have any of the colname is NA removed by default. 
+# If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
+cleanDF = function(df, colname, selected_name = NA){
+  if (!is.na(selected_name)) {
+    filter = sapply(df[colname[1]], function(x) !(x %in% selected_name))
+    for (name in df_names[2:(length(df_names))]){
+      inter_filter = sapply(df[name], function(x) !(x %in% selected_name))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  } else {
+    filter = sapply(df[colname[1]], function(x) !is.na(x))
+    for (name in df_names[2:(length(df_names))]){
+      inter_filter = sapply(df[name], function(x) !is.na(x))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  }
+  return(df_clean)
 }
-final_data = big_data[filter,]
+```
+
+
+```{r}
+# clean the big_data and pick the rows we want for analysis
+df_names = names(big_data)
+
+final_data = cleanDF(big_data, df_names)
+
+df_name = c("state_names")
+
+final_data_no_Al_Haw = cleanDF(big_data, df_names, c("alaska", "hawaii"))
 ```
 
 Step 2: EXPLORATION (Qing Guo, Peirang Xu)
