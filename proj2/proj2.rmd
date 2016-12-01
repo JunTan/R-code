@@ -62,7 +62,53 @@ data1
 Merging data1 and dataset3: (Qing Guo)
 
 ```{r}
-data2 = 
+require("rio")
+#2008 Voting Data
+#loading data from excel
+path = "http://www.stat.berkeley.edu/users/nolan/data/voteProject/" 
+file = paste(path, "countyVotes2008.xlsx",sep="")
+total =  import(file)#import the first sheet only
+states = total$STATE[1:51]
+states = gsub("\\*", "", states) #get rid of the * at the end of some state names
+mydata3 = list(total) #coerce total into a list
+i=2
+for (state in states){
+  if (state=="D.C."){
+    next
+  }
+  mydata3[[i]]<-import(file,which=state)#the "which" argument can be used to specify the sheet name
+  i=i+1
+}
+#change column names to be algined with that of data1:
+  for (i in 2:51){
+  colnames(mydata3[[i]]) = c("county_name", "Total Precincts", "Precincts Reporting", "vote_count_dem08", "vote_count_gop08", "other", "NA")
+  }
+#add percentage to each dataframe
+for (i in 2:51){
+    mydata3[[i]]$"vote_percent_gop08" = percent(mydata3[[i]]$vote_count_gop08/(sum(mydata3[[i]]$vote_count_dem08, mydata3[[i]]$vote_count_gop08, mydata3[[i]]$other, na.rm = TRUE)))
+    
+    mydata3[[i]]$"vote_percent_dem08" = percent(mydata3[[i]]$vote_count_dem08/(sum(mydata3[[i]]$vote_count_dem08, mydata3[[i]]$vote_count_gop08, mydata3[[i]]$other, na.rm = TRUE)))
+    
+  }
+#add the state column for each county
+states = states[states!= "D.C."]
+for (i in 1:50){
+  mydata3[[i+1]]$"state_names" = states[i]
+}
+#drop Total Precincts, Precincts Reporting, NAs and Other
+for (i in 2:51){
+  mydata3[[i]] = mydata3[[i]][ , -c(2,3,6,7)]
+}
+#drop the first total table
+mydata3 = mydata3[-1]
+#convert from list to a data frame
+mydata3 = do.call(rbind, lapply(mydata3, data.frame, stringsAsFactors=FALSE))
+#change the orders of the column
+mydata3 = mydata3[c("state_names", "county_name", "vote_count_gop08", "vote_percent_gop08", "vote_count_dem08", "vote_percent_dem08")]
+#drop the space in the county_name
+mydata3$county_name = sub("  ", " ", mydata3$county_name)
+#merge two dataframe
+data2 = merge(mydata3, data1, by = c("state_names", "county_name"), all = TRUE)
 
 ```
 
@@ -179,7 +225,7 @@ all_3 = all_3[!filter,]
 ```
 
 ```{r}
-data4 = merge(x = data1, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
+data4 = merge(x = data2, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
 filter = sapply(data4$county_name, is.na)
 data4 = data4[!filter,]
 ```
