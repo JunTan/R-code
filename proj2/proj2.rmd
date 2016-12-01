@@ -56,7 +56,6 @@ mydata2$county_name = sub("  ", " ", mydata2$county_name)
 #merge two dataframe
 data1 = merge(mydata1, mydata2, by = c("state_names", "county_name"), all = TRUE)
 
-data1
 ```
 
 Merging data1 and dataset3: (Qing Guo)
@@ -254,8 +253,44 @@ data4 = data4[!filter,]
 Merging data4 and dataset6: (Gong Ze)
 
 ```{r}
-big_data = 
+#GML data
+require(XML)
+GMLsource = "http://www.stat.berkeley.edu/users/nolan/data/voteProject/counties.gml"
+GMLparse = xmlParse(GMLsource)
+GMLroot = xmlRoot(GMLparse)
+countyname = xpathSApply(GMLroot, '//county/gml:name',xmlValue)
+```
 
+
+```{r}
+state_name = xpathSApply(GMLroot,'//state/gml:name', xmlValue)
+state_name_clean = gsub("\n[ ]*", "", state_name)
+state_count = sapply(state_name, function(i)
+           length(xpathApply(GMLroot, paste0("//state[gml:name='",i,"']/county/gml:name"))))
+state_names = rep(state_name_clean, times=state_count)
+```
+
+
+```{r}
+latitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))
+longitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))
+dataset6 = data.frame(countyname, state_names,latitude,longitude)
+dataset6$state_names = tolower(dataset6$state_names)
+dataset6$countyname = gsub("county", "", tolower(dataset6$countyname))
+dataset6$countyname = gsub("\n[ ]*", "", dataset6$countyname)
+big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names"), by.y = c("countyname", "state_names"), all.x = TRUE)
+
+```
+
+```{r}
+# clean the final dataframe to make the data with all none-na stats
+df_names = names(big_data)
+filter = sapply(big_data[1], function(x) !is.na(x))
+for (name in df_names[2:(length(df_names))]){
+  inter_filter = sapply(big_data[name], function(x) !is.na(x))
+  filter = filter & inter_filter
+}
+final_data = big_data[filter,]
 ```
 
 Step 2: EXPLORATION (Qing Guo, Peirang Xu)
