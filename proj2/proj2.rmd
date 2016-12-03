@@ -340,41 +340,6 @@ comb_similar_row = function(df){
 
 
 ```{r}
-
-temp_df = big_data[c(2,3),]
-  result_df = NA 
-  result_df = rbind(result_df, temp_df[1,])
-  county_name = temp_df$county_name
-  state_names = temp_df$state_names
-  for (i in c(2:nrow(temp_df))){
-    cName = temp_df[i,]$county_name
-    sName = temp_df[i,]$state_names
-    filter = (state_names == sName) & grepl(pattern = cName, x = county_name) & !(sName %in% result_df$state_names) & !(cName %in% result_df$county_name)
-    p = gsub(pattern = " [A-z]*", " ", c(cName))
-    p = gsub(pattern = "  ", " ", p)
-    filter2 = grepl(pattern = p[1], x = result_df[result_df$state_names == sName, "county_name"])
-    if (all(filter2 == FALSE)) {
-      result_df = rbind(result_df, temp_df[i,])
-    } else if (!any(filter2)) {
-    similar_row = temp_df[filter, ]
-    similar_cNames = similar_row$county_name
-    similar_sNames = similar_row$state_names
-    for (name in unique(similar_sNames)) {
-      filter_df = similar_row[similar_sNames == name, ]
-      df1 = filter_df[1,]
-      df2 = filter_df[2,]
-      df1[which(is.na(df1) & !is.na(df2))] = df2[which(is.na(df1) & !is.na(df2))]
-      result_df = rbind(result_df, df1)
-    }
-    }
-    stop("pause")
-    
-  }
-
-```
-
-
-```{r}
 # clean the big_data and pick the rows we want for analysis
 big_data_2 = comb_similar_row(big_data)
 

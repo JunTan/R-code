@@ -269,8 +269,8 @@ state_names = rep(state_name_clean, times=state_count)
 
 
 ```{r}
-latitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))
-longitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))
+latitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))/1000000
+longitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))/1000000
 dataset6 = data.frame(countyname, state_names,latitude,longitude)
 dataset6$state_names = tolower(dataset6$state_names)
 dataset6$countyname = gsub("county", "", tolower(dataset6$countyname))
@@ -281,7 +281,7 @@ big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names")
 
 ```{r}
 # clean the given dataframe
-# return the dataframe with rows that have any of the colname is NA removed by default. 
+# remove rows that have any of the column = NA removed by default and return the new dataframe. 
 # If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
 cleanDF = function(df, colname, selected_name = NA){
   filter = !vector(mode = "logical", length = nrow(df))
