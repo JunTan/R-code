@@ -1,0 +1,347 @@
+---
+title: "E-project"
+output: html_document
+Authors: Jun Tan (SID:26370084), Peirang Xu (SID:25117973), Ze Gong, Qing Guo, WU Peichen
+---
+
+Step 1: DATA WRANGLING
+
+Merging dataset1 and dataset2: (Peirang Xu)
+
+```{r}
+#2016 Voting Data
+require(scales)
+mydata1 = read.csv("http://www.stat.berkeley.edu/users/nolan/data/voteProject/2016_US_County_Level_Presidential_Results.csv")
+mydata1 = as.data.frame(mydata1)
+mydata1$state_names = state.name[match(mydata1$state_abbr, state.abb)]
+mydata1 =mydata1[,c("state_names","county_name","votes_gop","per_gop","votes_dem","per_dem")]
+colnames(mydata1) = c("state_names","county_name","vote_count_gop16","vote_percent_gop16","vote_count_dem16","vote_percent_dem16")
+mydata1$vote_percent_dem16 = percent(mydata1$vote_percent_dem16)
+mydata1$vote_percent_gop16 = percent(mydata1$vote_percent_gop16)
+mydata1 = data.frame(lapply(mydata1, as.character), stringsAsFactors = FALSE)
+mydata1$county_name = gsub("County|city|City","", mydata1$county_name)
+mydata1$county_name = sub("  ", " ", mydata1$county_name)
+
+#2012 Voting Data
+require(XML)
+Names = scan("http://www.stat.berkeley.edu/users/nolan/data/voteProject/countyVotes2012/stateNames.txt", character())
+state_names = Names[c(-1, -3)]
+urls = paste("http://www.stat.berkeley.edu/~nolan/data/voteProject/countyVotes2012/", state_names ,".xml", sep = "")
+
+vtDoc <- list(0)
+vtRoot <- list(0)
+mydata2 = for(i in 1:length(urls)){
+  vtDoc[[i]] = xmlParse(urls[i])
+  vtRoot[[i]] = xmlRoot(vtDoc[[i]])
+}
+
+getData <- function(x) {
+  county_name = xpathSApply(x, '//th[@class = "results-county"]/text()',xmlValue)[-1]
+  vote_count_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class ="results-popular"]',xmlValue)
+  vote_percent_gop12 = xpathSApply(x, '//tr[@class = "party-republican race-winner" or @class = "party-republican"]/td[@class = "results-percentage"]',xmlValue) 
+  vote_count_dem12 = xpathSApply(x, '//tr[@class = "party-democrat" or @class="party-democrat race-winner"]/td[@class ="results-popular"]',xmlValue)
+  vote_percent_dem12 = xpathSApply(x, '//tr[@class = "party-democrat" or @class ="party-democrat race-winner"]/td[@class = "results-percentage"]', xmlValue)
+  df_col <- data.frame(county_name, vote_count_gop12, vote_percent_gop12, vote_count_dem12, vote_percent_dem12)
+  return(df_col)
+}
+
+getData2 = lapply(vtRoot, getData)
+rows = sapply(getData2, nrow)
+state_names = as.character(rep(state.name, rows))
+getData2 = do.call(rbind, getData2)
+mydata2 = cbind(state_names, getData2)
+mydata2 = data.frame(lapply(mydata2, as.character), stringsAsFactors = FALSE)
+mydata2$county_name = sub("  ", " ", mydata2$county_name)
+
+#merge two dataframe
+data1 = merge(mydata1, mydata2, by = c("state_names", "county_name"), all = TRUE)
+
+```
+
+Merging data1 and dataset3: (Qing Guo)
+
+```{r}
+require("rio")
+#2008 Voting Data
+#loading data from excel
+path = "http://www.stat.berkeley.edu/users/nolan/data/voteProject/" 
+file = paste(path, "countyVotes2008.xlsx",sep="")
+total =  import(file)#import the first sheet only
+states = total$STATE[1:51]
+states = gsub("\\*", "", states) #get rid of the * at the end of some state names
+mydata3 = list(total) #coerce total into a list
+i=2
+for (state in states){
+  if (state=="D.C."){
+    next
+  }
+  mydata3[[i]]<-import(file,which=state)#the "which" argument can be used to specify the sheet name
+  i=i+1
+}
+#change column names to be algined with those of data1:
+  for (i in 2:51){
+  colnames(mydata3[[i]]) = c("county_name", "Total Precincts", "Precincts Reporting", "vote_count_dem08", "vote_count_gop08", "other", "NA")
+  }
+#add percentage to each dataframe
+for (i in 2:51){
+    mydata3[[i]]$"vote_percent_gop08" = percent(mydata3[[i]]$vote_count_gop08/(sum(mydata3[[i]]$vote_count_dem08, mydata3[[i]]$vote_count_gop08, mydata3[[i]]$other, na.rm = TRUE)))
+    mydata3[[i]]$"vote_percent_dem08" = percent(mydata3[[i]]$vote_count_dem08/(sum(mydata3[[i]]$vote_count_dem08, mydata3[[i]]$vote_count_gop08, mydata3[[i]]$other, na.rm = TRUE)))
+    
+  }
+#add the state column for each county
+states = states[states!= "D.C."]
+for (i in 1:50){
+  mydata3[[i+1]]$"state_names" = states[i]
+}
+#drop Total Precincts, Precincts Reporting, NAs and Other
+for (i in 2:51){
+  mydata3[[i]] = mydata3[[i]][ , -c(2,3,6,7)]
+}
+#drop the first total table
+mydata3 = mydata3[-1]
+#convert from list to a data frame and clean the dataframe
+mydata3 = do.call(rbind, lapply(mydata3, data.frame, stringsAsFactors=FALSE))
+mydata3 = mydata3[c("state_names", "county_name", "vote_count_gop08", "vote_percent_gop08", "vote_count_dem08", "vote_percent_dem08")]
+mydata3$county_name = sub("  ", " ", mydata3$county_name)
+#merge two dataframe
+data2 = merge(mydata3, data1, by = c("state_names", "county_name"), all = TRUE)
+
+```
+
+Merging data2 and dataset4: (Dennis)
+
+```{r}
+#reading election results of 2004 into data frame mydata4 
+mydata4 = read.table("http://www.stat.berkeley.edu/~nolan/data/voteProject/countyVotes2004.txt", header = TRUE)
+mydata4$countyName = as.character(mydata4$countyName)
+mydata4$states = gsub(",[a-z ]*", "", mydata4$countyName)
+countyName = gsub("[a-z ]*,", "", mydata4$countyName)
+countyName = sapply(countyName, function(x) paste(x, " ", sep = ""))
+mydata4$countyName = countyName
+mydata4 = mydata4[, c(4, 1, 2, 3)]
+names(mydata4) = c("state_names", "county_name", "vote_count_gop04", "vote_count_dem04")
+sum = mydata4$vote_count_gop04 + mydata4$vote_count_dem04
+mydata4$vote_percent_gop04 = percent(mydata4$vote_count_gop04/sum)
+mydata4$vote_percent_dem04 = percent(mydata4$vote_count_dem04/sum)
+
+#merging mydata4 with data2
+data2$state_names = tolower(data2$state_names)
+data2$county_name = tolower(data2$county_name)
+data3 = merge(data2, mydata4, by = c("state_names", "county_name"), all = TRUE)
+
+```
+
+Merging data3 and dataset5: (Jun Tan)
+
+```{r}
+# Read in data
+B01003 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv",head=TRUE,sep=",")
+B01003 = B01003[c(-1,-2)]
+
+DP02 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP02.csv",head=TRUE,sep=",")
+DP02 = DP02[c("GEO.display.label", "HC03_VC86", "HC03_VC87", "HC03_VC88", "HC03_VC89", "HC03_VC90", "HC03_VC91", "HC03_VC93", "HC03_VC94")]
+
+DP03 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP03.csv",head=TRUE,sep=",")
+DP03 = DP03[c("GEO.display.label", "HC03_VC50", "HC03_VC51", "HC03_VC52", "HC03_VC54", "HC03_VC56", "HC03_VC58", "HC03_VC59", "HC03_VC62")]
+```
+
+
+```{r}
+# Function for extract state and county/city from a vector of string. Return values have the first half as county, the bottom half as state
+get_county_state = function(county_states) {
+  county_states = sapply(county_states, as.character)
+  county_states = county_states[!is.na(county_states)]
+  county_states = strsplit(county_states, ",")
+  county_names = sapply(county_states, function(x) x[1])
+  county_names = strsplit(county_names, "County")
+  county_names = sapply(county_names, function(x) x[1])
+  state_names = sapply(county_states, function(x) x[2])
+  state_names = sub(" ", "", state_names)
+  return(c(county_names, state_names))
+}
+
+```
+
+
+```{r}
+# data process for B01003
+# Split county names and state names
+split_county_states = get_county_state(B01003$GEO.display.label)
+len = length(split_county_states)
+B01003$county_name = split_county_states[0:(len/2)]
+B01003$state_name = split_county_states[(len/2+1):len]
+
+# Extract the data frame, each county-state pair in a row with population stats
+col_names =  c("county_name", "state_name", "POPGROUP.display.label", "HD01_VD01", "HD02_VD01")
+B01003_popgroup1 = B01003[B01003$POPGROUP.id == 1, col_names]
+B01003_popgroup2 = B01003[B01003$POPGROUP.id == 2, col_names]
+B01003_popgroup4 = B01003[B01003$POPGROUP.id == 4, col_names]
+
+# Merge different stats
+B01003_popgroup1_2 = merge(x = B01003_popgroup1, y = B01003_popgroup2, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
+filter = sapply(B01003_popgroup1_2$county_name, is.na)
+B01003_popgroup1_2 = B01003_popgroup1_2[!filter,]
+
+B01003_clean = merge(x = B01003_popgroup1_2, y = B01003_popgroup4, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
+filter = sapply(B01003_clean$county_name, is.na)
+B01003_clean= B01003_clean[!filter,]
+
+# Clean the final dataframe
+B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD01_VD01.y", "HD02_VD01")]
+colnames(B01003_clean) = c("county_name", "state_name", "total population", "white population", "black population")
+```
+
+
+```{r}
+# Process DP02
+# Filter out county_name and state_name
+names = c("county_states", "% 9-12th grade no diploma", "% high school grad(eq)", "% some college, no deg", "% AS deg", "% BS", "% MS/PHD", "% of % high school of higher", "% of % BS or higher")
+colnames(DP02) = names
+split_county_states = get_county_state(DP02$county_states)
+len = length(split_county_states)
+DP02$county_name = split_county_states[0:(len/2)]
+DP02$state_name = split_county_states[(len/2+1):len]
+
+# Clean DP02
+DP02_clean = DP02[c("county_name", "state_name", names[2:length(names)])]
+```
+
+
+```{r}
+# Process DP03
+names = c("county_states", 
+          "% Agriculture, forestry, fishing and hunting, and mining", 
+          "% Construction", "% Manufacturing", "% Retail trade", "% Information", 
+          "% Professional, scientific, and management, and administrative and waste management services", 
+          "% Educational services, and health care and social assistance",
+          "% Public administration")
+colnames(DP03) = names
+split_county_states = get_county_state(DP03$county_states)
+len = length(split_county_states)
+DP03$county_name = split_county_states[0:(len/2)]
+DP03$state_name = split_county_states[(len/2+1):len]
+
+# Clean DP03
+wanted_coln = names[2:length(names)]
+DP03_clean = DP03[c("county_name", "state_name", wanted_coln)]
+```
+
+
+```{r}
+# Merge B01003_clean, DP03_clean and DP02_clean
+inter1 = merge(x = B01003_clean, y = DP02_clean, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all = TRUE)
+filter = sapply(inter1$county_name, is.na)
+inter1 = inter1[!filter,]
+all_3 = merge(x = inter1, y = DP03_clean, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all = TRUE)
+filter = sapply(all_3$county_name, is.na)
+all_3 = all_3[!filter,]
+```
+
+
+```{r}
+# Merge my dataframe with the master dataframe
+all_3$state_name = tolower(all_3$state_name)
+all_3$county_name = tolower(all_3$county_name)
+data4 = merge(x = data3, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
+filter = sapply(data4$county_name, is.na)
+data4 = data4[!filter,]
+```
+
+Merging data4 and dataset6: (Gong Ze)
+
+```{r}
+#GML data
+require(XML)
+GMLsource = "http://www.stat.berkeley.edu/users/nolan/data/voteProject/counties.gml"
+GMLparse = xmlParse(GMLsource)
+GMLroot = xmlRoot(GMLparse)
+countyname = xpathSApply(GMLroot, '//county/gml:name',xmlValue)
+```
+
+
+```{r}
+state_name = xpathSApply(GMLroot,'//state/gml:name', xmlValue)
+state_name_clean = gsub("\n[ ]*", "", state_name)
+state_count = sapply(state_name, function(i)
+           length(xpathApply(GMLroot, paste0("//state[gml:name='",i,"']/county/gml:name"))))
+state_names = rep(state_name_clean, times=state_count)
+```
+
+
+```{r}
+latitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))
+longitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))
+dataset6 = data.frame(countyname, state_names,latitude,longitude)
+dataset6$state_names = tolower(dataset6$state_names)
+dataset6$countyname = gsub("county", "", tolower(dataset6$countyname))
+dataset6$countyname = gsub("\n[ ]*", "", dataset6$countyname)
+big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names"), by.y = c("countyname", "state_names"), all.x = TRUE)
+```
+
+
+```{r}
+# clean the given dataframe
+# return the dataframe with rows that have any of the colname is NA removed by default. 
+# If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
+cleanDF = function(df, colname, selected_name = NA){
+  filter = !vector(mode = "logical", length = nrow(df))
+  if (!is.na(selected_name)) {
+    for (name in colname){
+      inter_filter = sapply(df[name], function(x) !(x %in% selected_name))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  } else {
+    for (name in colname){
+      inter_filter = sapply(df[name], function(x) !is.na(x))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  }
+  return(df_clean)
+}
+```
+
+
+```{r}
+# combine rows with same state name and similar county name because dataset classify county and city differently
+comb_similar_row = function(df){
+  temp_df = df
+  result_df = NA 
+  result_df = rbind(result_df, temp_df[1,])
+  county_name = temp_df$county_name
+  state_names = temp_df$state_names
+  for (i in c(2:nrow(temp_df))){
+    cName = temp_df[i,]$county_name
+    sName = temp_df[i,]$state_names
+    filter = (state_names == sName) & grepl(pattern = cName, x = county_name) & !(sName %in% result_df$state_names) & !(cName %in% result_df$county_name)
+    p = gsub(pattern = " [A-z]*", " ", c(cName))
+    p = gsub(pattern = "  ", " ", p)
+    filter2 = grepl(pattern = p[1], x = result_df[result_df$state_names == sName, "county_name"])
+    if (all(filter2 == FALSE)) {
+      result_df = rbind(result_df, temp_df[i,])
+    } else if (!any(filter2)) {
+      similar_row = temp_df[filter, ]
+      similar_cNames = similar_row$county_name
+      similar_sNames = similar_row$state_names
+      for (name in unique(similar_sNames)) {
+        filter_df = similar_row[similar_sNames == name, ]
+        df1 = filter_df[1,]
+        df2 = filter_df[2,]
+        df1[which(is.na(df1) & !is.na(df2))] = df2[which(is.na(df1) & !is.na(df2))]
+        result_df = rbind(result_df, df1)
+      }
+    }
+  }
+  return(result_df[2:nrow(result_df), ])
+}
+```
+
+
+```{r}
+# clean the big_data by combining the rows with same state_name and similar county/city name
+final_data = comb_similar_row(big_data)
+
+# pick rows with state_names are not alaska because alaska does not have sufficient information needed for analysis
+final_data_no_AL = cleanDF(final_data, colname = c("state_names"), selected_name = c("alaska"))
+```
