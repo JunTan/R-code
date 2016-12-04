@@ -190,14 +190,13 @@ filter = sapply(B01003_popgroup1_2$county_name, is.na)
 B01003_popgroup1_2 = B01003_popgroup1_2[!filter,]
 
 B01003_clean = merge(x = B01003_popgroup1_2, y = B01003_popgroup4, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
-filter = sapply(B01003_clean$county_name, is.na)
-B01003_clean= B01003_clean[!filter,]
 
 # Clean the final dataframe
 B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD01_VD01.y", "HD02_VD01")]
 colnames(B01003_clean) = c("county_name", "state_name", "total population", "white population", "black population")
 ```
 
+The last step subset out the needed information to analysis.
 
 ```{r}
 # Process DP02
@@ -240,18 +239,16 @@ inter1 = merge(x = B01003_clean, y = DP02_clean, by.x = c("county_name", "state_
 filter = sapply(inter1$county_name, is.na)
 inter1 = inter1[!filter,]
 all_3 = merge(x = inter1, y = DP03_clean, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all = TRUE)
-filter = sapply(all_3$county_name, is.na)
-all_3 = all_3[!filter,]
+all_3 = all_3[, c(2, 1, 3:21)]
 ```
 
+The final dataframe "all_3" has all rows from DP03_clean, DP02_clean, and B01003_clean.
 
 ```{r}
 # Merge my dataframe with the master dataframe
 all_3$state_name = tolower(all_3$state_name)
 all_3$county_name = tolower(all_3$county_name)
-data4 = merge(x = data3, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all = TRUE)
-filter = sapply(data4$county_name, is.na)
-data4 = data4[!filter,]
+data4 = merge(x = data3, y = all_3, by.x = c("state_names", "county_name"), by.y = c("state_name", "county_name"), all.x = TRUE)
 ```
 
 Merging data4 and dataset6: (Gong Ze)
@@ -348,11 +345,16 @@ comb_similar_row = function(df){
 ```{r}
 # clean the big_data by combining the rows with same state_name and similar county/city name
 final_data = comb_similar_row(big_data)
+```
 
+There are about 200 rows reduction after combining similar rows because some cites were recorded as its city name in some years in some dataset but also recorded as the county it belongs to in some other years in some other datasets. That results in some data are missing in some row but actually those data are in the row paired with the city name or county name. Thus the 'comb_similar_row' merges those missing data together with the corresponding city/county name.
+
+```{r}
 # pick rows with state_names are not alaska because alaska does not have sufficient information needed for analysis
 final_data_no_AL = cleanDF(final_data, colname = c("state_names"), selected_name = c("alaska"))
 ```
 
+Because most of data from Alaska are missing, including the voting from all different years, Alaska won't contribute a lot to our predictions and plots, it can be removed without causing significant impact.
 
 Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
 ```{r}
