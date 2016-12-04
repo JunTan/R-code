@@ -137,7 +137,11 @@ Merging data3 and dataset5: (Jun Tan)
 # Read in data
 B01003 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv",head=TRUE,sep=",")
 B01003 = B01003[c(-1,-2)]
+```
 
+The first and second column are eliminated because they are not useful in terms of analyzing the correlation betweeen the voting statistic with other census data.
+
+```{r}
 DP02 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP02.csv",head=TRUE,sep=",")
 DP02 = DP02[c("GEO.display.label", "HC03_VC86", "HC03_VC87", "HC03_VC88", "HC03_VC89", "HC03_VC90", "HC03_VC91", "HC03_VC93", "HC03_VC94")]
 
@@ -145,11 +149,15 @@ DP03 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/censu
 DP03 = DP03[c("GEO.display.label", "HC03_VC50", "HC03_VC51", "HC03_VC52", "HC03_VC54", "HC03_VC56", "HC03_VC58", "HC03_VC59", "HC03_VC62")]
 ```
 
+DP02 gets out the percentage of education level of the population and DP03 gets out the percentage of the occupation in different area of the population.
 
 ```{r}
 # Function for extract state and county/city from a vector of string. Return values have the first half as county, the bottom half as state
 get_county_state = function(county_states) {
   county_states = sapply(county_states, as.character)
+  # Get rid of hex character in the county name
+  county_states = gsub("[\x01-\x1f\x7f-\xff]", "", county_states) 
+  
   county_states = county_states[!is.na(county_states)]
   county_states = strsplit(county_states, ",")
   county_names = sapply(county_states, function(x) x[1])
@@ -159,7 +167,6 @@ get_county_state = function(county_states) {
   state_names = sub(" ", "", state_names)
   return(c(county_names, state_names))
 }
-
 ```
 
 
@@ -242,7 +249,7 @@ all_3 = all_3[!filter,]
 # Merge my dataframe with the master dataframe
 all_3$state_name = tolower(all_3$state_name)
 all_3$county_name = tolower(all_3$county_name)
-data4 = merge(x = data3, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all.x = TRUE)
+data4 = merge(x = data3, y = all_3, by.x = c("county_name", "state_names"), by.y = c("county_name", "state_name"), all = TRUE)
 filter = sapply(data4$county_name, is.na)
 data4 = data4[!filter,]
 ```
@@ -350,54 +357,58 @@ final_data_no_AL = cleanDF(final_data, colname = c("state_names"), selected_name
 Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
 ```{r}
 # use final_data_no_AL for predictor base on the voting percent statistic from 04, 08, 12. Voting percent statistic from 16 is used for Testing
-chooseTest_dem = c(1,2,10)
-votingTest_dem = final_data[chooseTest_dem]
+choose16_dem = c(1,2,10)
+voting6_dem = final_data[choose16_dem]
 
-chooseTest_gop = c(1,2,8)
-votingTest_gop = final_data[chooseTest_gop]
+choose16_gop = c(1,2,8)
+voting16_gop = final_data[choose16_gop]
 
-chooseTrain_dem = c(1,2,18,6,14,10)
-votingTrain_dem = final_data[ , chooseTrain_dem ]
+choose12_dem = c(1,2,14, 19:37)
+voting12_dem = final_data[ , choose12_dem]
 
-chooseTrain_gop = c(1,2,17,4,12,8)
+choose12_gop = c(1,2,12, 19:37)
 votingTrain_gop = final_data[ , chooseTrain_gop]
+
 ```
 
 ## Training for 2016 democrate voting percentage
 
-Create a 3-column matrix called `folds` that contains indices for partitioning the `tweetTrain` data frame into 3 folds.
+Create a 10-column matrix called `folds` that contains indices for partitioning the `voting12_dem` data frame into 10 folds.
 
 ```{r, error=TRUE}
+set.seed(24687531)
+nTotal = nrow(voting12_dem)
+chooseTest = sample(nTotal, size = 303, replace = FALSE)
+votingTest_dem = voting12_dem[chooseTest, ]
+votingTrain_dem = voting12_dem[ -chooseTest, ]
+
 nTrain = nrow(votingTrain_dem)
 # Set the seed so we all get the same results
 set.seed(12344321)
 permuteIndices = sample(nTrain)
 
-v = 3
-folds_dem = matrix(permuteIndices, ncol = 3)
+v = 10
+folds_dem = matrix(permuteIndices, ncol = v)
 ```
 
 
 ```{r, error=TRUE}
 library(rpart)
-cps = c(seq(0.0001, 0.001, by = 0.0001), 
-       seq(0.001, 0.01, by = 0.001),
-       seq(0.01, 0.1, by = 0.01))
-cps = c(0.01)
+cps = c(seq(0.01, 0.1, by = 0.01))
 preds_dem = matrix(nrow = nTrain, ncol = length(cps))
 
-for (i in 1:3) {
+for (i in 1:v) {
   trainFold = as.integer(folds_dem[, -i])
   testFold = folds_dem[, i]
   
   for (j in 1:length(cps)) {
-    tree = rpart(vote_percent_dem16 ~ vote_percent_dem04+vote_percent_dem08+vote_percent_dem12,
+    tree = rpart(vote_percent_dem12 ~ .,
             data = votingTrain_dem[trainFold, ], 
             method = "class",
             control = rpart.control(cp = cps[j]))
     preds_dem[testFold,j ] = 
       predict(tree, 
-              newdata = votingTrain_dem[testFold, -1],
+              newdata = votingTrain_dem[testFold, -c("vote_percent_dem12")],
               type = "class")
   }
 }
