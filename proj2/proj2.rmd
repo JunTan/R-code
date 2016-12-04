@@ -358,17 +358,17 @@ Because most of data from Alaska are missing, including the voting from all diff
 
 Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
 ```{r}
-# use final_data_no_AL for predictor base on the voting percent statistic from 04, 08, 12. Voting percent statistic from 16 is used for Testing
+# use final_data_no_AL for predictor base on the voting percent statistic from 12 with population feature. Voting percent statistic from 16 is used for Testing
 choose16_dem = c(1,2,10)
 voting6_dem = final_data[choose16_dem]
 
 choose16_gop = c(1,2,8)
 voting16_gop = final_data[choose16_gop]
 
-choose12_dem = c(1,2,14, 19:37)
+choose12_dem = c(1,2,14, 19:21)
 voting12_dem = final_data[ , choose12_dem]
 
-choose12_gop = c(1,2,12, 19:37)
+choose12_gop = c(1,2,12, 19:21)
 votingTrain_gop = final_data[ , chooseTrain_gop]
 
 ```
