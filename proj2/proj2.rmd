@@ -1,7 +1,7 @@
 ---
 title: "E-project"
 output: html_document
-Authors: Jun Tan (SID:26370084)   Peirang Xu (SID:25117973)
+Authors: Jun Tan (SID:26370084), Peirang Xu (SID:25117973), Ze Gong, Qing Guo, WU Peichen
 ---
 
 Step 1: DATA WRANGLING
@@ -269,8 +269,8 @@ state_names = rep(state_name_clean, times=state_count)
 
 
 ```{r}
-latitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))
-longitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))
+latitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))/1000000
+longitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))/1000000
 dataset6 = data.frame(countyname, state_names,latitude,longitude)
 dataset6$state_names = tolower(dataset6$state_names)
 dataset6$countyname = gsub("county", "", tolower(dataset6$countyname))
@@ -281,19 +281,18 @@ big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names")
 
 ```{r}
 # clean the given dataframe
-# return the dataframe with rows that have any of the colname is NA removed by default. 
+# remove rows that have any of the column = NA removed by default and return the new dataframe. 
 # If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
 cleanDF = function(df, colname, selected_name = NA){
+  filter = !vector(mode = "logical", length = nrow(df))
   if (!is.na(selected_name)) {
-    filter = sapply(df[colname[1]], function(x) !(x %in% selected_name))
-    for (name in df_names[2:(length(df_names))]){
+    for (name in colname){
       inter_filter = sapply(df[name], function(x) !(x %in% selected_name))
       filter = filter & inter_filter
     }
     df_clean = df[filter,]
   } else {
-    filter = sapply(df[colname[1]], function(x) !is.na(x))
-    for (name in df_names[2:(length(df_names))]){
+    for (name in colname){
       inter_filter = sapply(df[name], function(x) !is.na(x))
       filter = filter & inter_filter
     }
@@ -340,30 +339,66 @@ comb_similar_row = function(df){
 
 
 ```{r}
-# clean the big_data and pick the rows we want for analysis
-big_data_2 = comb_similar_row(big_data)
+# clean the big_data by combining the rows with same state_name and similar county/city name
+final_data = comb_similar_row(big_data)
 
-df_names = names(big_data_2)
-
-final_data = cleanDF(big_data_2, df_names)
-
-df_names = c("state_names")
-
-final_data_no_Al_Haw = cleanDF(big_data_2, df_names, c("alaska", "hawaii"))
+# pick rows with state_names are not alaska because alaska does not have sufficient information needed for analysis
+final_data_no_AL = cleanDF(final_data, colname = c("state_names"), selected_name = c("alaska"))
 ```
 
-Step 2: EXPLORATION (Qing Guo, Peirang Xu)
-
-```{r}
-
-```
-
-Step 3: MAP MAKING (Qing Guo, Peirang Xu)
-```{r}
-
-```
 
 Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
 ```{r}
+# use final_data_no_AL for predictor base on the voting percent statistic from 04, 08, 12. Voting percent statistic from 16 is used for Testing
+chooseTest_dem = c(1,2,10)
+votingTest_dem = final_data[chooseTest_dem]
 
+chooseTest_gop = c(1,2,8)
+votingTest_gop = final_data[chooseTest_gop]
+
+chooseTrain_dem = c(1,2,18,6,14,10)
+votingTrain_dem = final_data[ , chooseTrain_dem ]
+
+chooseTrain_gop = c(1,2,17,4,12,8)
+votingTrain_gop = final_data[ , chooseTrain_gop]
+```
+
+## Training for 2016 democrate voting percentage
+
+Create a 3-column matrix called `folds` that contains indices for partitioning the `tweetTrain` data frame into 3 folds.
+
+```{r, error=TRUE}
+nTrain = nrow(votingTrain_dem)
+# Set the seed so we all get the same results
+set.seed(12344321)
+permuteIndices = sample(nTrain)
+
+v = 3
+folds_dem = matrix(permuteIndices, ncol = 3)
+```
+
+
+```{r, error=TRUE}
+library(rpart)
+cps = c(seq(0.0001, 0.001, by = 0.0001), 
+       seq(0.001, 0.01, by = 0.001),
+       seq(0.01, 0.1, by = 0.01))
+cps = c(0.01)
+preds_dem = matrix(nrow = nTrain, ncol = length(cps))
+
+for (i in 1:3) {
+  trainFold = as.integer(folds_dem[, -i])
+  testFold = folds_dem[, i]
+  
+  for (j in 1:length(cps)) {
+    tree = rpart(vote_percent_dem16 ~ vote_percent_dem04+vote_percent_dem08+vote_percent_dem12,
+            data = votingTrain_dem[trainFold, ], 
+            method = "class",
+            control = rpart.control(cp = cps[j]))
+    preds_dem[testFold,j ] = 
+      predict(tree, 
+              newdata = votingTrain_dem[testFold, -1],
+              type = "class")
+  }
+}
 ```
