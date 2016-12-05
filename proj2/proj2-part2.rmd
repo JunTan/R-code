@@ -1,45 +1,77 @@
 
 ## Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
+
+```{r}
+# clean the given dataframe
+# remove rows that have any of the column = NA removed by default and return the new dataframe. 
+# If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
+cleanDF = function(df, colname, selected_name = NA){
+  filter = !vector(mode = "logical", length = nrow(df))
+  if (!is.na(selected_name)) {
+    for (name in colname){
+      inter_filter = sapply(df[name], function(x) !(x %in% selected_name))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  } else {
+    for (name in colname){
+      inter_filter = sapply(df[name], function(x) !is.na(x))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  }
+  return(df_clean)
+}
+```
+
 ```{r}
 # load data
 load("final_data_no_AK.Rda")
 ```
 
 
-### Add missing data of NA from Internet
+#### Add missing data of NA from Internet
 ```{r}
 # population missing data get added 
 acadia_louisiana = final_data_no_AK$county_name == "acadia " & final_data_no_AK$state_names == "louisiana"
 final_data_no_AK[acadia_louisiana, ]$`total population` = 2919
 final_data_no_AK[acadia_louisiana, ]$`white population` = 1051
 final_data_no_AK[acadia_louisiana, ]$`black population` = 1787
+
+selected_name = c("total population", "white population", "black population")
+#df_used = cleanDF(final_data_no_AK, colname = selected_name)
+df_used = final_data_no_AK
 ```
 
+
+### Cross Validation training for 2016 democrate voting percentage
 ```{r}
 # use final_data_no_AK for predictor base on the voting percent statistic from 12 with population feature. Voting percent statistic from 16 is used for Testing
-choose16_dem = c(1,2,10)
-voting6_dem = final_data_no_AK[choose16_dem]
+choose16_dem = c(10, 19:21)
+voting16_dem = df_used[choose16_dem]
+colnames(voting16_dem)[1] = c('vote_percent')
 
-choose16_gop = c(1,2,8)
-voting16_gop = final_data_no_AK[choose16_gop]
+choose16_gop = c(8,19:21)
+voting16_gop = df_used[choose16_gop]
+colnames(voting16_gop)[1] = c('vote_percent')
 
 # Only want education statistic
-choose12_dem = c(1,2,14, 19:21)
-voting12_dem = final_data_no_AK[ , choose12_dem]
+choose12_dem = c(14, 19:21)
+voting12_dem = df_used[ , choose12_dem]
+colnames(voting12_dem)[1] = c('vote_percent')
 
-choose12_gop = c(1,2,12, 19:21)
-voting12_gop = final_data_no_AK[ , choose12_gop]
+choose12_gop = c(12, 19:21)
+voting12_gop = df_used[ , choose12_gop]
+colnames(voting12_gop)[1] = c('vote_percent')
 
 ```
-
-## Training for 2016 democrate voting percentage
 
 Create a 10-column matrix called `folds` that contains indices for partitioning the `voting12_dem` data frame into 10 folds.
 
 ```{r, error=TRUE}
 set.seed(24687531)
 nTotal = nrow(voting12_dem)
-chooseTest = sample(nTotal, size = 587, replace = FALSE)
+chooseTest = sample(nTotal, size = 457, replace = FALSE)
 votingTest_dem = voting12_dem[chooseTest, ]
 votingTrain_dem = voting12_dem[ -chooseTest, ]
 
@@ -53,9 +85,12 @@ folds_dem = matrix(permuteIndices, ncol = v)
 ```
 
 
+
 ```{r, error=TRUE}
 library(rpart)
-cps = c(seq(0.01, 0.1, by = 0.01))
+cps = c(seq(0.0001, 0.001, by = 0.0001), 
+       seq(0.001, 0.01, by = 0.001),
+       seq(0.01, 0.1, by = 0.01))
 preds_dem = matrix(nrow = nTrain, ncol = length(cps))
 
 for (i in 1:v) {
@@ -63,14 +98,84 @@ for (i in 1:v) {
   testFold = folds_dem[, i]
   
   for (j in 1:length(cps)) {
-    tree = rpart(vote_percent_dem12 ~ .,
+    print(c("Enter", i, j))
+    tree = rpart(vote_percent ~ .,
             data = votingTrain_dem[trainFold, ], 
             method = "class",
             control = rpart.control(cp = cps[j]))
     preds_dem[testFold,j ] = 
       predict(tree, 
-              newdata = votingTrain_dem[testFold, -c("vote_percent_dem12")],
+              newdata = votingTrain_dem[testFold, -1],
               type = "class")
   }
 }
+```
+
+
+```{r, error = TRUE}
+# find the best prediction
+cvRates = apply(preds_dem, 2, function(oneSet) {
+  dev = as.numeric(votingTrain_dem$vote_percent)
+  result = sum (oneSet == dev) / nTrain
+  return(result)
+  }
+)
+```
+
+
+#### Choose the Value for `cp`
+
+From our plot and the following statistics, choose a value for `cp`.  You may not want to choose the `cp` with the smallest error, but choose a slightly larger `cp` that has nearly the same error rate.
+
+```{r, error=TRUE}
+library(ggplot2)
+ind = which.max(cvRates)
+
+cvRes = data.frame(cps, cvRates)
+ggplot(data = cvRes, aes(x = cps, y = cvRates)) +
+  geom_line() + 
+  labs(x = "Complexity Parameter", y = "Classification Rate")
+```
+
+
+```{r, error=TRUE}
+cpChoice = 
+
+finalTree = rpart(vote_percent ~ .,
+                  data = votingTrain_dem, 
+                  method = "class",
+                  control = rpart.control(cp = cpChoice))
+
+# Best model
+testPreds = predict(finalTree, 
+              newdata = voting16_dem,
+              type = "class")
+
+classRate = sum(testPreds == voting16_dem$vote_percent) / 
+  nrow(voting16_dem)
+
+classRate
+```
+
+
+### Knn training for 2016 republican voting percentage
+```{r}
+choose16_gop = c(8, 19:21, 38, 39)
+voting16_gop = df_used[choose16_gop]
+colnames(voting16_gop)[3] = c('vote_percent')
+
+choose12_gop = c(12, 19:21, 38, 39)
+voting12_gop = df_used[ , choose12_gop]
+colnames(voting12_gop)[3] = c('vote_percent')
+```
+
+
+```{r}
+# choose the index for training set and test set
+ind = sample(2, nrow(voting12_gop), replace=TRUE, prob=c(0.67, 0.33))
+votingTrain_gop = voting12_gop[ind==1, 1:6]
+votingTest_gop = voting12_gop[ind==2, 1:6]
+voting_trainLabels <- voting12_gop[ind==1, 5]
+
+
 ```
