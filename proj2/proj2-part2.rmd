@@ -1,29 +1,5 @@
 
 ## Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
-
-```{r}
-# clean the given dataframe
-# remove rows that have any of the column = NA removed by default and return the new dataframe. 
-# If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
-cleanDF = function(df, colname, selected_name = NA){
-  filter = !vector(mode = "logical", length = nrow(df))
-  if (!is.na(selected_name)) {
-    for (name in colname){
-      inter_filter = sapply(df[name], function(x) !(x %in% selected_name))
-      filter = filter & inter_filter
-    }
-    df_clean = df[filter,]
-  } else {
-    for (name in colname){
-      inter_filter = sapply(df[name], function(x) !is.na(x))
-      filter = filter & inter_filter
-    }
-    df_clean = df[filter,]
-  }
-  return(df_clean)
-}
-```
-
 ```{r}
 # load data
 load("final_data_no_AK.Rda")
@@ -38,8 +14,6 @@ final_data_no_AK[acadia_louisiana, ]$`total population` = 2919
 final_data_no_AK[acadia_louisiana, ]$`white population` = 1051
 final_data_no_AK[acadia_louisiana, ]$`black population` = 1787
 
-selected_name = c("total population", "white population", "black population")
-#df_used = cleanDF(final_data_no_AK, colname = selected_name)
 df_used = final_data_no_AK
 ```
 
@@ -158,24 +132,66 @@ classRate
 ```
 
 
-### Knn training for 2016 republican voting percentage
+### Knn training for 2016 winning party
 ```{r}
-choose16_gop = c(8, 19:21, 38, 39)
-voting16_gop = df_used[choose16_gop]
-colnames(voting16_gop)[3] = c('vote_percent')
+choose16 = c(1,2,8, 10, 19:21, 38, 39)
+voting16 = df_used[choose16]
+win_gop = voting16$vote_percent_gop16 > voting16$vote_percent_dem16
+voting16$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2))
 
-choose12_gop = c(12, 19:21, 38, 39)
-voting12_gop = df_used[ , choose12_gop]
-colnames(voting12_gop)[3] = c('vote_percent')
+choose12 = c(1,2,12, 14, 19:21, 38, 39)
+voting12 = df_used[ , choose12]
+win_gop = voting12$vote_percent_gop12 > voting12$vote_percent_dem12
+voting12$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2))
 ```
+
+why do we randomize based on the states not on the country?
+Bias sample may pick too many from certain region if certain state has more counties, then in the country level, those counties has a higher probability to be picked.
 
 
 ```{r}
 # choose the index for training set and test set
-ind = sample(2, nrow(voting12_gop), replace=TRUE, prob=c(0.67, 0.33))
-votingTrain_gop = voting12_gop[ind==1, 1:6]
-votingTest_gop = voting12_gop[ind==2, 1:6]
-voting_trainLabels <- voting12_gop[ind==1, 5]
+set.seed(24687531)
+states = unique(voting12$state_names)
+votingTrain_gop_ind_1 = c()
+votingTrain_gop_ind_2 = c()
+votingTest_gop_ind = c()
+
+for(state in states){
+  if(!is.na(state)){
+    filter = voting12$state_names == state
+    selected_df = voting12[filter, ]
+    nTotal = nrow(selected_df)
+    partition = nTotal/3
+    permuteIndices = sample(nTotal)
+    if(length(permuteIndices) == 1){
+      part3 = permuteIndices[1]
+      votingTest_gop_ind = c(votingTest_gop_ind, part3)
+    } else if(length(permuteIndices) == 2){
+      part1 = permuteIndices[1]
+      part2 = permuteIndices[2]
+      votingTrain_gop_ind_1 = c(votingTrain_gop_ind_1, part1)
+      votingTrain_gop_ind_2 = c(votingTrain_gop_ind_2, part2)
+    } else {
+      part1 = permuteIndices[1:partition]
+      part2 = permuteIndices[(partition+1):(partition+partition)]
+      part3 = permuteIndices[(partition+partition+1):(length(permuteIndices))]
+      print(state)
+      print(c(length(part1), length(part2), length(part3)))
+      votingTrain_gop_ind_1 = c(votingTrain_gop_ind_1, part1)
+      votingTrain_gop_ind_2 = c(votingTrain_gop_ind_2, part2)
+      votingTest_gop_ind = c(votingTest_gop_ind, part3)
+    }
+  }
+}
+
+votingTrain_gop_1 = voting12[votingTrain_gop_ind_1,]
+votingTrain_gop_2 = voting12[votingTrain_gop_ind_2,]
+votingTest_gop = voting12[votingTest_gop_ind,]
+```
+
+#### cross validation
+```{r}
 
 
 ```
