@@ -4,9 +4,9 @@ output: html_document
 Authors: Jun Tan (SID:26370084), Peirang Xu (SID:25117973), Ze Gong, Qing Guo, WU Peichen
 ---
 
-Step 1: DATA WRANGLING
+### Step 1: DATA WRANGLING
 
-Merging dataset1 and dataset2: (Peirang Xu)
+## Merging dataset1 and dataset2: (Peirang Xu)
 
 ```{r}
 #2016 Voting Data
@@ -58,7 +58,9 @@ data1 = merge(mydata1, mydata2, by = c("state_names", "county_name"), all = TRUE
 
 ```
 
-Merging data1 and dataset3: (Qing Guo)
+When I merge the first two data frames, I firstly imported the two datasets of 2016 voting results and 2012 voting results using “read.csv” and “xmlParse”. Then, I kept the county name, state name, vote counts and percentage of Democrats and Republicans in the two data frames. when I merge the first two data frames, I used state name and county name as “by”, and all = TRUE to keep all the rows in the merge in case for further use in the project, so as a result, there are NAs in the merged data frame. In the merge of these two data frames, for example, I found that in the 2016 voting data, the county name of the state Alaska is not specified as is specified in the 2012 voting data, and in the merged data frame, I kept the voting result for Alaska in both 2012 and 2016. Also, the voting data for Arkansas in 2012 is incomplete, but I kept all the rows in 2016 Arkansas voting data.
+
+## Merging data1 and dataset3: (Qing Guo)
 
 ```{r}
 require("rio")
@@ -108,7 +110,9 @@ data2 = merge(mydata3, data1, by = c("state_names", "county_name"), all = TRUE)
 
 ```
 
-Merging data2 and dataset4: (Dennis)
+For the excel dataset, the alaska voting data and DC voting data are missing in the excel tabs. In order to be algined with the former dataset, I calculated the percentage of democrats and republicans votes in each county. Before the merge, I did some data cleaning so that my 2008 dataset could be adpated to the previous dataset. Since the first table is about the results of each state and I don't need that for our dataframe, I dropped it. During the merge, I used union instead of intersection because at this point we don't know if counties with NA in 2008 have voting data or not for other election years. So I saved those NAs for further use. For instance, the Alaska data is still missing but I choose to keep those county names first even though it gives me back NAs because we want to wait to see the data of other years.
+
+## Merging data2 and dataset4: (WU, Peichen)
 
 ```{r}
 #reading election results of 2004 into data frame mydata4 
@@ -130,8 +134,9 @@ data2$county_name = tolower(data2$county_name)
 data3 = merge(data2, mydata4, by = c("state_names", "county_name"), all = TRUE)
 
 ```
+After merging the main data frame with the results of 2004, the number of rows increases from 3459 to 3506. But the election results of 2004 only contains 2975 rows, since it only contains the results of counties form 48 states (no data from Alaska and Hawaii). 
 
-Merging data3 and dataset5: (Jun Tan)
+## Merging data3 and dataset5: (Jun Tan)
 
 ```{r}
 # Read in data
@@ -180,23 +185,22 @@ B01003$state_name = split_county_states[(len/2+1):len]
 
 # Extract the data frame, each county-state pair in a row with population stats
 col_names =  c("county_name", "state_name", "POPGROUP.display.label", "HD01_VD01", "HD02_VD01")
-B01003_popgroup1 = B01003[B01003$POPGROUP.id == 1, col_names]
-B01003_popgroup2 = B01003[B01003$POPGROUP.id == 2, col_names]
-B01003_popgroup4 = B01003[B01003$POPGROUP.id == 4, col_names]
+B01003_total = B01003[B01003$POPGROUP.id == 1, col_names]
+B01003_white = B01003[B01003$POPGROUP.id == 2, col_names]
+B01003_black = B01003[B01003$POPGROUP.id == 4, col_names]
 
 # Merge different stats
-B01003_popgroup1_2 = merge(x = B01003_popgroup1, y = B01003_popgroup2, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
-filter = sapply(B01003_popgroup1_2$county_name, is.na)
-B01003_popgroup1_2 = B01003_popgroup1_2[!filter,]
+B01003_total_white = merge(x = B01003_total, y = B01003_white, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
 
-B01003_clean = merge(x = B01003_popgroup1_2, y = B01003_popgroup4, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
+B01003_clean = merge(x = B01003_total_white, y = B01003_black, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all.x = TRUE)
 
 # Clean the final dataframe
 B01003_clean = B01003_clean[c("county_name", "state_name", "HD01_VD01.x", "HD01_VD01.y", "HD02_VD01")]
 colnames(B01003_clean) = c("county_name", "state_name", "total population", "white population", "black population")
+B01003_clean$`black population` = as.numeric(B01003_clean$`black population`)
 ```
 
-The last step subset out the needed information to analysis.
+The last step subset out the needed information to analysis including total population, white population and black population.
 
 ```{r}
 # Process DP02
@@ -232,6 +236,7 @@ wanted_coln = names[2:length(names)]
 DP03_clean = DP03[c("county_name", "state_name", wanted_coln)]
 ```
 
+B01003_clean, DP03_clean and DP02_clean are denoted to be dataframes with county_name, state_name and corresponding census information from the dataset.
 
 ```{r}
 # Merge B01003_clean, DP03_clean and DP02_clean
@@ -251,7 +256,9 @@ all_3$county_name = tolower(all_3$county_name)
 data4 = merge(x = data3, y = all_3, by.x = c("state_names", "county_name"), by.y = c("state_name", "county_name"), all.x = TRUE)
 ```
 
-Merging data4 and dataset6: (Gong Ze)
+data4 includes all information about voting from 2004, 2008, 2012 and 2016 and census data of population, education level and occupation from 2010. We want to keep the rows that has voting statistics because we are analyzing the voting in this project. Those rows with education or occupation information only does not contribute to the analysis of the voting.
+
+## Merging data4 and dataset6: (Gong Ze)
 
 ```{r}
 #GML data
@@ -282,6 +289,7 @@ dataset6$countyname = gsub("\n[ ]*", "", dataset6$countyname)
 big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names"), by.y = c("countyname", "state_names"), all.x = TRUE)
 ```
 
+## Clean the final dataframe
 
 ```{r}
 # clean the given dataframe
@@ -322,9 +330,9 @@ comb_similar_row = function(df){
     p = gsub(pattern = " [A-z]*", " ", c(cName))
     p = gsub(pattern = "  ", " ", p)
     filter2 = grepl(pattern = p[1], x = result_df[result_df$state_names == sName, "county_name"])
-    if (all(filter2 == FALSE)) {
+    if (!is.na(p) & all(filter2 == FALSE)) {
       result_df = rbind(result_df, temp_df[i,])
-    } else if (!any(filter2)) {
+    } else if (!is.na(p) & !any(filter2)) {
       similar_row = temp_df[filter, ]
       similar_cNames = similar_row$county_name
       similar_sNames = similar_row$state_names
@@ -351,7 +359,36 @@ There are about 200 rows reduction after combining similar rows because some cit
 
 ```{r}
 # pick rows with state_names are not alaska because alaska does not have sufficient information needed for analysis
-final_data_no_AL = cleanDF(final_data, colname = c("state_names"), selected_name = c("alaska"))
+final_data_no_AK = cleanDF(final_data, colname = c("state_names"), selected_name = c("alaska"))
+save(final_data_no_AK,file="final_data_no_AK.rda")
 ```
 
 Because most of data from Alaska are missing, including the voting from all different years, Alaska won't contribute a lot to our predictions and plots, it can be removed without causing significant impact.
+
+## References
+"http://www.stat.berkeley.edu/users/nolan/data/voteProject/2016_US_County_Level_Presidential_Results.csv"
+
+"http://www.stat.berkeley.edu/users/nolan/data/voteProject/countyVotes2012/stateNames.txt"
+
+"http://www.stat.berkeley.edu/users/nolan/data/voteProject/" 
+
+"http://www.stat.berkeley.edu/~nolan/data/voteProject/countyVotes2004.txt"
+
+"http://www.stat.berkeley.edu/users/nolan/data/voteProject/counties.gml"
+
+"http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv"
+
+"http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP02.csv"
+
+"http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP03.csv"
+
+
+## Package used
+scales
+XML
+rio
+
+## System info
+```{r}
+sessionInfo()
+```
