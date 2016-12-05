@@ -1,0 +1,66 @@
+
+### Step 4: MODELING (Jun Tan, Dennis, Gong Ze)
+```{r}
+# load data
+load("final_data_no_AK.Rda")
+```
+
+```{r}
+# use final_data_no_AK for predictor base on the voting percent statistic from 12 with population feature. Voting percent statistic from 16 is used for Testing
+choose16_dem = c(1,2,10)
+voting6_dem = final_data[choose16_dem]
+
+choose16_gop = c(1,2,8)
+voting16_gop = final_data[choose16_gop]
+
+# Only want education statistic
+choose12_dem = c(1,2,14, 19:21)
+voting12_dem = final_data[ , choose12_dem]
+
+choose12_gop = c(1,2,12, 19:21)
+votingTrain_gop = final_data[ , chooseTrain_gop]
+
+```
+
+## Training for 2016 democrate voting percentage
+
+Create a 10-column matrix called `folds` that contains indices for partitioning the `voting12_dem` data frame into 10 folds.
+
+```{r, error=TRUE}
+set.seed(24687531)
+nTotal = nrow(voting12_dem)
+chooseTest = sample(nTotal, size = 303, replace = FALSE)
+votingTest_dem = voting12_dem[chooseTest, ]
+votingTrain_dem = voting12_dem[ -chooseTest, ]
+
+nTrain = nrow(votingTrain_dem)
+# Set the seed so we all get the same results
+set.seed(12344321)
+permuteIndices = sample(nTrain)
+
+v = 10
+folds_dem = matrix(permuteIndices, ncol = v)
+```
+
+
+```{r, error=TRUE}
+library(rpart)
+cps = c(seq(0.01, 0.1, by = 0.01))
+preds_dem = matrix(nrow = nTrain, ncol = length(cps))
+
+for (i in 1:v) {
+  trainFold = as.integer(folds_dem[, -i])
+  testFold = folds_dem[, i]
+  
+  for (j in 1:length(cps)) {
+    tree = rpart(vote_percent_dem12 ~ .,
+            data = votingTrain_dem[trainFold, ], 
+            method = "class",
+            control = rpart.control(cp = cps[j]))
+    preds_dem[testFold,j ] = 
+      predict(tree, 
+              newdata = votingTrain_dem[testFold, -c("vote_percent_dem12")],
+              type = "class")
+  }
+}
+```
