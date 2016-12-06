@@ -143,7 +143,7 @@ folds_gop_won = matrix(data = c(votingTrain_gop_ind_1, votingTrain_gop_ind_2), n
 library(class)
 training_set_nrow = length(votingTrain_gop_ind_1)
 nTain_gop_won = training_set_nrow *2
-ks = c(seq(1, 5, by = 1))
+ks = c(seq(1, 10, by = 0.5))
 
 preds_gop_won = matrix(nrow = nTain_gop_won, ncol = length(ks))
 
@@ -159,10 +159,11 @@ for (i in 1:v) {
 }
 ```
 
+
 Calculate the classification rate for each k values
 ```{r, error = TRUE}
 # find the best prediction
-cvRates = apply(preds_gop_won, 2, function(oneSet) {
+kRates = apply(preds_gop_won, 2, function(oneSet) {
   gop_won = c(as.numeric(votingTrain_gop_1$win_gop), as.numeric(votingTrain_gop_2$win_gop))
   result = sum (oneSet == gop_won) / nTain_gop_won
   return(result)
@@ -171,7 +172,55 @@ cvRates = apply(preds_gop_won, 2, function(oneSet) {
 ```
 
 
-### Cross Validation training for 2016 democrate voting percentage
+### Choose the Value for `K`
+
+From our plot and the following statistics, choose a value for `k`.  You may not want to choose the `k` with the smallest error, but choose a slightly larger `k` that has nearly the same error rate.
+
+```{r, error=TRUE}
+library(ggplot2)
+ind = which.max(kRates)
+ks[ind]
+
+kRes = data.frame(ks, kRates)
+ggplot(data = kRes, aes(x = ks, y = kRates)) +
+  geom_line() + 
+  labs(x = "Complexity Parameter", y = "K value")
+```
+
+
+### Final Assessment of the Knn Predictor
+
+Now that you have selected `k` using cross-validation on your training data, we can 
+
+* Build the predictor with the chosen `k` on all of `votingTrain_gop_1` and `votingTrain_gop_2`
+
+* Predict the winner for the observtions in `votingTest_gop` and `voting16`
+
+* Calculate the classification rate for `votingTest_gop` and `voting16`
+
+```{r, error=TRUE}
+kChoice = ks[ind+4]
+
+training_set = rbind(votingTrain_gop_1,votingTrain_gop_2)
+
+# Predict the winner for the observtions in `votingTest_gop` and `voting16`
+votingTest_gop_pred = knn(train = training_set[c(3:9)], test = votingTest_gop[, c(3:9)], cl = training_set[,10], k=kChoice)
+
+voting16_gop_pred = knn(train = training_set[c(3:9)], test = voting16[, c(3:9)], cl = training_set[,10], k=kChoice)
+
+# Calculate the classification rate for `votingTest_gop` and `voting16`
+
+votingTest_gop_classRate = sum(votingTest_gop_pred == votingTest_gop$win_gop) / nrow(votingTest_gop)
+
+votingTest_gop_classRate
+
+voting16_gop_classRate = sum(voting16_gop_pred == voting16$win_gop) / nrow(voting16)
+
+voting16_gop_classRate
+```
+
+############################
+## Cross Validation training for 2016 democrate voting percentage
 ```{r}
 # use final_data_no_AK for predictor base on the voting percent statistic from 12 with population feature. Voting percent statistic from 16 is used for Testing
 choose16_dem = c(10, 19:21)
