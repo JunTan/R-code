@@ -5,6 +5,29 @@
 load("final_data_no_AK.Rda")
 ```
 
+```{r}
+# clean the given dataframe
+# remove rows that have any of the column = NA removed by default and return the new dataframe. 
+# If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
+cleanDF = function(df, colname, selected_name = NA){
+  filter = !vector(mode = "logical", length = nrow(df))
+  if (!is.na(selected_name)) {
+    for (name in colname){
+      inter_filter = sapply(df[name], function(x) !(x %in% selected_name))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  } else {
+    for (name in colname){
+      inter_filter = sapply(df[name], function(x) !is.na(x))
+      filter = filter & inter_filter
+    }
+    df_clean = df[filter,]
+  }
+  return(df_clean)
+}
+```
+
 
 #### Add missing data of NA from Internet
 ```{r}
@@ -13,8 +36,138 @@ acadia_louisiana = final_data_no_AK$county_name == "acadia " & final_data_no_AK$
 final_data_no_AK[acadia_louisiana, ]$`total population` = 2919
 final_data_no_AK[acadia_louisiana, ]$`white population` = 1051
 final_data_no_AK[acadia_louisiana, ]$`black population` = 1787
+```
 
-df_used = final_data_no_AK
+
+### Knn training for 2016 winning party
+Data cleaning: add missing data found in internet or get rid of not needed data
+```{r}
+# following code get ride of some rows because they do not have voting information from 2016 and can't be found online, thus cannot be included in the knn analysis because knn can't take any NA data
+final_data_no_AK = final_data_no_AK[c(-3200),]
+
+selected_col = names(final_data_no_AK)[c(1,2,8, 10,12, 14, 19:21, 38, 39)]
+df_used = cleanDF(df = final_data_no_AK, colname = selected_col)
+```
+
+
+```{r}
+choose16 = c(1,2,8, 10, 19:21, 38, 39)
+voting16 = df_used[, choose16]
+voting16$vote_percent_gop16 = as.numeric(sub("%", "", voting16$vote_percent_gop16))
+voting16$vote_percent_dem16 = as.numeric(sub("%", "", voting16$vote_percent_dem16))
+win_gop = voting16$vote_percent_gop16 >= voting16$vote_percent_dem16
+voting16$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2))
+
+choose12 = c(1,2,12, 14, 19:21, 38, 39)
+voting12 = df_used[ , choose12]
+voting12$vote_percent_gop12 = as.numeric(sub("%", "", voting12$vote_percent_gop12))
+voting12$vote_percent_dem12 = as.numeric(sub("%", "", voting12$vote_percent_dem12))
+win_gop = voting12$vote_percent_gop12 >= voting12$vote_percent_dem12
+voting12$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2))
+
+```
+
+why do we randomize based on the states not on the country?
+Bias sample may pick too many from certain region if certain state has more counties, then in the country level, those counties has a higher probability to be picked.
+
+```{r}
+# find the index in df with corresponding "county_name" and "state_names" in selected_df
+corresponding_ind = function(selected_df, df, x){
+   which((df$county_name==selected_df[x, "county_name"]) &
+          (df$state_names==selected_df[x, "state_names"]))[1]
+}
+
+```
+
+
+```{r}
+# choose the index for training set and test set
+set.seed(24687531)
+states = unique(voting12$state_names)
+votingTrain_gop_ind_1 = c()
+votingTrain_gop_ind_2 = c()
+votingTest_gop_ind = c()
+
+for(state in states){
+  if(!is.na(state)){
+    filter = (!is.na(voting12$state_names) & voting12$state_names == state)
+    selected_df = voting12[filter, ]
+    nTotal = nrow(selected_df)
+    partition = floor(nTotal/3)
+    permuteIndices = sample(nTotal)
+    if(length(permuteIndices) == 1){
+      part3 = permuteIndices[1]
+      votingTest_gop_ind = c(votingTest_gop_ind, part3)
+    } else if(length(permuteIndices) == 2){
+      part1 = permuteIndices[1]
+      part2 = permuteIndices[2]
+      votingTrain_gop_ind_1 = c(votingTrain_gop_ind_1, part1)
+      votingTrain_gop_ind_2 = c(votingTrain_gop_ind_2, part2)
+    } else {
+      part1 = permuteIndices[1:partition]
+      part2 = permuteIndices[(partition+1):(partition+partition)]
+      part3 = permuteIndices[(partition+partition+1):(length(permuteIndices))]
+      ind1 = unlist(sapply(part1, function(x) corresponding_ind(selected_df, voting12, x)))
+      ind2 = unlist(sapply(part2, function(x) corresponding_ind(selected_df, voting12, x)))
+      ind3 = unlist(sapply(part3, function(x) corresponding_ind(selected_df, voting12, x)))
+      votingTrain_gop_ind_1 = c(votingTrain_gop_ind_1, ind1)
+      votingTrain_gop_ind_2 = c(votingTrain_gop_ind_2, ind2)
+      votingTest_gop_ind = c(votingTest_gop_ind, ind3)
+    }
+  }
+}
+
+votingTrain_gop_1 = voting12[votingTrain_gop_ind_1,]
+votingTrain_gop_2 = voting12[votingTrain_gop_ind_2,]
+votingTest_gop = voting12[votingTest_gop_ind,]
+```
+
+
+```{r}
+nrow(votingTrain_gop_1)+nrow(votingTrain_gop_2)+nrow(votingTest_gop)
+voting12[which(is.na(voting12$state_names)),]
+```
+
+
+nrow(votingTest_gop)+nrow(votingTrain_gop_1)+nrow(votingTrain_gop_2) is one less than nrow(voting12) because one row has county_name = "district of columbia" but NA data everywhere, including the voting data. Thus it is removed.
+
+#### cross validation
+Set up the 2 fold matrix
+```{r}
+v = 2
+folds_gop_won = matrix(data = c(votingTrain_gop_ind_1, votingTrain_gop_ind_2), ncol = 2)
+```
+
+
+```{r}
+library(class)
+training_set_nrow = length(votingTrain_gop_ind_1)
+nTain_gop_won = training_set_nrow *2
+ks = c(seq(1, 5, by = 1))
+
+preds_gop_won = matrix(nrow = nTain_gop_won, ncol = length(ks))
+
+for (i in 1:v) {
+  trainFold = as.integer(folds_gop_won[, -i])
+  testFold = folds_gop_won[, i]
+  
+  for (j in 1:length(ks)) {
+    start_indx = (i-1)*training_set_nrow+1
+    end_indx = i*training_set_nrow
+    preds_gop_won[c(start_indx:end_indx),j ] = knn(train = voting12[trainFold, c(3:9)], test = voting12[testFold, c(3:9)], cl = voting12[trainFold,10], k=ks[j])
+  }
+}
+```
+
+Calculate the classification rate for each k values
+```{r, error = TRUE}
+# find the best prediction
+cvRates = apply(preds_gop_won, 2, function(oneSet) {
+  gop_won = c(as.numeric(votingTrain_gop_1$win_gop), as.numeric(votingTrain_gop_2$win_gop))
+  result = sum (oneSet == gop_won) / nTain_gop_won
+  return(result)
+  }
+)
 ```
 
 
@@ -132,102 +285,5 @@ classRate
 ```
 
 
-### Knn training for 2016 winning party
-```{r}
-choose16 = c(1,2,8, 10, 19:21, 38, 39)
-voting16 = df_used[choose16]
-win_gop = voting16$vote_percent_gop16 > voting16$vote_percent_dem16
-voting16$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2))
-
-choose12 = c(1,2,12, 14, 19:21, 38, 39)
-voting12 = df_used[ , choose12]
-win_gop = voting12$vote_percent_gop12 > voting12$vote_percent_dem12
-voting12$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2))
-```
-
-why do we randomize based on the states not on the country?
-Bias sample may pick too many from certain region if certain state has more counties, then in the country level, those counties has a higher probability to be picked.
-
-```{r}
-# find the index in df with corresponding "county_name" and "state_names" in selected_df
-corresponding_ind = function(selected_df, df, x){
-   which((df$county_name==selected_df[x, "county_name"]) &
-          (df$state_names==selected_df[x, "state_names"]))[1]
-}
-
-```
-
-
-```{r}
-# choose the index for training set and test set
-set.seed(24687531)
-states = unique(voting12$state_names)
-votingTrain_gop_ind_1 = c()
-votingTrain_gop_ind_2 = c()
-votingTest_gop_ind = c()
-
-for(state in states){
-  if(!is.na(state)){
-    filter = (!is.na(voting12$state_names) & voting12$state_names == state)
-    selected_df = voting12[filter, ]
-    nTotal = nrow(selected_df)
-    partition = floor(nTotal/3)
-    permuteIndices = sample(nTotal)
-    if(length(permuteIndices) == 1){
-      part3 = permuteIndices[1]
-      votingTest_gop_ind = c(votingTest_gop_ind, part3)
-    } else if(length(permuteIndices) == 2){
-      part1 = permuteIndices[1]
-      part2 = permuteIndices[2]
-      votingTrain_gop_ind_1 = c(votingTrain_gop_ind_1, part1)
-      votingTrain_gop_ind_2 = c(votingTrain_gop_ind_2, part2)
-    } else {
-      part1 = permuteIndices[1:partition]
-      part2 = permuteIndices[(partition+1):(partition+partition)]
-      part3 = permuteIndices[(partition+partition+1):(length(permuteIndices))]
-      ind1 = unlist(sapply(part1, function(x) corresponding_ind(selected_df, voting12, x)))
-      ind2 = unlist(sapply(part2, function(x) corresponding_ind(selected_df, voting12, x)))
-      ind3 = unlist(sapply(part3, function(x) corresponding_ind(selected_df, voting12, x)))
-      votingTrain_gop_ind_1 = c(votingTrain_gop_ind_1, ind1)
-      votingTrain_gop_ind_2 = c(votingTrain_gop_ind_2, ind2)
-      votingTest_gop_ind = c(votingTest_gop_ind, ind3)
-    }
-  }
-}
-
-votingTrain_gop_1 = voting12[votingTrain_gop_ind_1,]
-votingTrain_gop_2 = voting12[votingTrain_gop_ind_2,]
-votingTest_gop = voting12[votingTest_gop_ind,]
-
-voting12[which(is.na(voting12$state_names)),]
-```
-
-
-```{r}
-len = c(1:(length(part1)))
-
-for(i in len){
-  print(selected_df[part1[i], c("county_name", "state_names")])
-  print(voting12[ind1[i], c("county_name", "state_names")])
-  print(c("##############################"))
-}
-```
-
-nrow(votingTest_gop)+nrow(votingTrain_gop_1)+nrow(votingTrain_gop_2) is one less than nrow(voting12) because one row has county_name = "district of columbia" but NA data everywhere, including the voting data. Thus it is removed.
-
-#### cross validation
-Set up the 2 fold matrix
-```{r}
-v = 2
-folds = matrix(data = c(votingTrain_gop_ind_1, votingTrain_gop_ind_2), ncol = 2)
-```
-
-
-```{r}
-ks = c(seq(1, 5, by = 1))
-
-preds_gop_won = matrix(nrow = nTrain, ncol = length(ks))
-
-```
-
-
+## Package used
+class
