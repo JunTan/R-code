@@ -125,7 +125,6 @@ votingTest_gop = voting12[votingTest_gop_ind,]
 
 ```{r}
 nrow(votingTrain_gop_1)+nrow(votingTrain_gop_2)+nrow(votingTest_gop)
-voting12[which(is.na(voting12$state_names)),]
 ```
 
 
@@ -199,14 +198,17 @@ Now that you have selected `k` using cross-validation on your training data, we 
 * Calculate the classification rate for `votingTest_gop` and `voting16`
 
 ```{r, error=TRUE}
-kChoice = ks[ind+4]
+
+kChoice = ks[ind]
+
 
 training_set = rbind(votingTrain_gop_1,votingTrain_gop_2)
 
 # Predict the winner for the observtions in `votingTest_gop` and `voting16`
-votingTest_gop_pred = knn(train = training_set[c(3:9)], test = votingTest_gop[, c(3:9)], cl = training_set[,10], k=kChoice)
+votingTest_gop_pred = knn(train = training_set[, c(3:9)], test = votingTest_gop[, c(3:9)], cl = training_set[,10], k=kChoice)
 
-voting16_gop_pred = knn(train = training_set[c(3:9)], test = voting16[, c(3:9)], cl = training_set[,10], k=kChoice)
+
+voting16_gop_pred = knn(train = training_set[,c(3:9)], test = voting16[, c(3:9)], cl = training_set[,10], k=kChoice)
 
 # Calculate the classification rate for `votingTest_gop` and `voting16`
 
@@ -219,120 +221,3 @@ voting16_gop_classRate = sum(voting16_gop_pred == voting16$win_gop) / nrow(votin
 voting16_gop_classRate
 ```
 
-############################
-## Cross Validation training for 2016 democrate voting percentage
-```{r}
-# use final_data_no_AK for predictor base on the voting percent statistic from 12 with population feature. Voting percent statistic from 16 is used for Testing
-choose16_dem = c(10, 19:21)
-voting16_dem = df_used[choose16_dem]
-colnames(voting16_dem)[1] = c('vote_percent')
-
-choose16_gop = c(8,19:21)
-voting16_gop = df_used[choose16_gop]
-colnames(voting16_gop)[1] = c('vote_percent')
-
-# Only want education statistic
-choose12_dem = c(14, 19:21)
-voting12_dem = df_used[ , choose12_dem]
-colnames(voting12_dem)[1] = c('vote_percent')
-
-choose12_gop = c(12, 19:21)
-voting12_gop = df_used[ , choose12_gop]
-colnames(voting12_gop)[1] = c('vote_percent')
-
-```
-
-Create a 10-column matrix called `folds` that contains indices for partitioning the `voting12_dem` data frame into 10 folds.
-
-```{r, error=TRUE}
-set.seed(24687531)
-nTotal = nrow(voting12_dem)
-chooseTest = sample(nTotal, size = 457, replace = FALSE)
-votingTest_dem = voting12_dem[chooseTest, ]
-votingTrain_dem = voting12_dem[ -chooseTest, ]
-
-nTrain = nrow(votingTrain_dem)
-# Set the seed so we all get the same results
-set.seed(12344321)
-permuteIndices = sample(nTrain)
-
-v = 10
-folds_dem = matrix(permuteIndices, ncol = v)
-```
-
-
-
-```{r, error=TRUE}
-library(rpart)
-cps = c(seq(0.0001, 0.001, by = 0.0001), 
-       seq(0.001, 0.01, by = 0.001),
-       seq(0.01, 0.1, by = 0.01))
-preds_dem = matrix(nrow = nTrain, ncol = length(cps))
-
-for (i in 1:v) {
-  trainFold = as.integer(folds_dem[, -i])
-  testFold = folds_dem[, i]
-  
-  for (j in 1:length(cps)) {
-    print(c("Enter", i, j))
-    tree = rpart(vote_percent ~ .,
-            data = votingTrain_dem[trainFold, ], 
-            method = "class",
-            control = rpart.control(cp = cps[j]))
-    preds_dem[testFold,j ] = 
-      predict(tree, 
-              newdata = votingTrain_dem[testFold, -1],
-              type = "class")
-  }
-}
-```
-
-
-```{r, error = TRUE}
-# find the best prediction
-cvRates = apply(preds_dem, 2, function(oneSet) {
-  dev = as.numeric(votingTrain_dem$vote_percent)
-  result = sum (oneSet == dev) / nTrain
-  return(result)
-  }
-)
-```
-
-
-#### Choose the Value for `cp`
-
-From our plot and the following statistics, choose a value for `cp`.  You may not want to choose the `cp` with the smallest error, but choose a slightly larger `cp` that has nearly the same error rate.
-
-```{r, error=TRUE}
-library(ggplot2)
-ind = which.max(cvRates)
-
-cvRes = data.frame(cps, cvRates)
-ggplot(data = cvRes, aes(x = cps, y = cvRates)) +
-  geom_line() + 
-  labs(x = "Complexity Parameter", y = "Classification Rate")
-```
-
-
-```{r, error=TRUE}
-cpChoice = 
-
-finalTree = rpart(vote_percent ~ .,
-                  data = votingTrain_dem, 
-                  method = "class",
-                  control = rpart.control(cp = cpChoice))
-
-# Best model
-testPreds = predict(finalTree, 
-              newdata = voting16_dem,
-              type = "class")
-
-classRate = sum(testPreds == voting16_dem$vote_percent) / 
-  nrow(voting16_dem)
-
-classRate
-```
-
-
-## Package used
-class
