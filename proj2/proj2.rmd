@@ -412,8 +412,13 @@ dem04[dem04] = 2
 all_counties$party04 = factor(gop04+dem04, levels = c(0,1,2), labels = c("tie", "gop", "dem"))
 
 #plot data for 2004 election
+
+geom_point(data=ctryStats, aes(x=longitude, y=latitude, size = pop, color=imRate)) +
+  scale_colour_gradientn("infant mortalit Rate", 
+                         colours=c( "#FF6633","#660000")) +
+  scale_size(name = "population", range(0.1,1))
 p = p +
-  geom_point(aes(x = all_counties$longitude, y = all_counties$latitude,color = all_counties$party04, alpha = 0.2, size = all_counties$vote_count_gop04 + all_counties$vote_count_dem04))+ scale_size(range = c(0,15))+ scale_color_manual(name = "patry",values = c( "gop" = "red", "dem" = "blue", "tie" = "purple"))+ guides(alpha = FALSE, color = FALSE, size = FALSE) + labs(x = "longitude", y = "latitude", title = "county voting results for 2004 election", color = "party", size = "Vote counts")
+  geom_point(aes(x = all_counties$longitude, y = all_counties$latitude,color = all_counties$party04, alpha = 0.2, size = all_counties$vote_count_gop04 + all_counties$vote_count_dem04)) + scale_size(name ="vote count", range = c(0,15))+ scale_color_manual(name = "leading patry",values = c( "gop" = "red", "dem" = "blue", "tie" = "green")) + labs(x = "longitude", y = "latitude", title = "county voting results for 2004 election")
 p
 
 ```
@@ -453,7 +458,7 @@ all_counties$party08 = factor(gop08+dem08, levels = c(0,1,2), labels = c("tie", 
 
 #plot data for 2008 election
 p = p +
-  geom_point(aes(x = all_counties$longitude, y = all_counties$latitude,color = all_counties$party08, alpha = 0.2, size = all_counties$vote_count_gop08 + all_counties$vote_count_dem08))+ scale_size( range = c(0,15)) +guides(alpha = FALSE, color = FALSE, size = FALSE) + labs(x = "longitude", y = "latitude", title = "county voting results for 2008 election", color = "party", size = "Vote counts") 
+  geom_point(aes(x = all_counties$longitude, y = all_counties$latitude,color = all_counties$party08, alpha = 0.2, size = all_counties$vote_count_gop08 + all_counties$vote_count_dem08))+ scale_size(name ="vote count", range = c(0,15))+ scale_color_manual(name = "leading patry",values = c( "gop" = "red", "dem" = "blue", "tie" = "green")) + labs(x = "longitude", y = "latitude", title = "county voting results for 2008 election")
 p
 
 ```
