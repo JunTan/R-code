@@ -205,7 +205,7 @@ The last step subset out the needed information to analysis including total popu
 ```{r}
 # Process DP02
 # Filter out county_name and state_name
-names = c("county_states", "% 9-12th grade no diploma", "% high school grad(eq)", "% some college, no deg", "% AS deg", "% BS", "% MS/PHD", "% of % high school of higher", "% of % BS or higher")
+names = c("county_states", "9-12th grade no diploma(%)", "high school grad(%)", "some college, no deg(%)", "AS(%)", "BS(%)", "MS/PHD(%)", "% high school of higher(%)", "% BS or higher(%)")
 colnames(DP02) = names
 split_county_states = get_county_state(DP02$county_states)
 len = length(split_county_states)
@@ -220,11 +220,11 @@ DP02_clean = DP02[c("county_name", "state_name", names[2:length(names)])]
 ```{r}
 # Process DP03
 names = c("county_states", 
-          "% Agriculture, forestry, fishing and hunting, and mining", 
-          "% Construction", "% Manufacturing", "% Retail trade", "% Information", 
-          "% Professional, scientific, and management, and administrative and waste management services", 
-          "% Educational services, and health care and social assistance",
-          "% Public administration")
+          "Agriculture, forestry, fishing and hunting, and mining(%)", 
+          "Construction", "Manufacturing", "Retail trade", "Information(%)", 
+          "Professional, scientific, and management, and administrative and waste management services(%)", 
+          "Educational services, and health care and social assistance(%)",
+          "Public administration(%)")
 colnames(DP03) = names
 split_county_states = get_county_state(DP03$county_states)
 len = length(split_county_states)
@@ -378,9 +378,9 @@ all_counties = final_data_no_AL[complete.cases(final_data_no_AL[,c(3,5)]),]
 all_counties = all_counties[all_counties$state_names != "hawaii",]
 ```
 
+
 ```{r}
 #plot election results for 2004 election
-
 library(ggplot2)
 library(maps)
 
@@ -395,7 +395,6 @@ p = ggplot() +
 #plot county boundaries
 counties = map_data("county")
 p = p + geom_polygon(data = counties, aes(x= long, y= lat, group = group), color = "grey", fill = "white")
-p
 #add in data
 
 #as.numeric(all_counties$vote_count_gop04)
@@ -412,11 +411,6 @@ dem04[dem04] = 2
 all_counties$party04 = factor(gop04+dem04, levels = c(0,1,2), labels = c("tie", "gop", "dem"))
 
 #plot data for 2004 election
-
-geom_point(data=ctryStats, aes(x=longitude, y=latitude, size = pop, color=imRate)) +
-  scale_colour_gradientn("infant mortalit Rate", 
-                         colours=c( "#FF6633","#660000")) +
-  scale_size(name = "population", range(0.1,1))
 p = p +
   geom_point(aes(x = all_counties$longitude, y = all_counties$latitude,color = all_counties$party04, alpha = 0.2, size = all_counties$vote_count_gop04 + all_counties$vote_count_dem04)) + scale_size(name ="vote count", range = c(0,15))+ scale_color_manual(name = "leading patry",values = c( "gop" = "red", "dem" = "blue", "tie" = "green")) + labs(x = "longitude", y = "latitude", title = "county voting results for 2004 election")
 p
@@ -426,7 +420,6 @@ p
 
 ```{r}
 #plot election results for 2008 election
-
 library(ggplot2)
 library(maps)
 
@@ -460,7 +453,6 @@ all_counties$party08 = factor(gop08+dem08, levels = c(0,1,2), labels = c("tie", 
 p = p +
   geom_point(aes(x = all_counties$longitude, y = all_counties$latitude,color = all_counties$party08, alpha = 0.2, size = all_counties$vote_count_gop08 + all_counties$vote_count_dem08))+ scale_size(name ="vote count", range = c(0,15))+ scale_color_manual(name = "leading patry",values = c( "gop" = "red", "dem" = "blue", "tie" = "green")) + labs(x = "longitude", y = "latitude", title = "county voting results for 2008 election")
 p
-
 ```
 
 
@@ -663,7 +655,7 @@ ggplot(data = cvRes, aes(x = cps, y = cvRates)) +
 
 ## Assess the Classification Tree Predictor with the Test set
 ```{r, error=TRUE}
-cpChoice1 = cps[12]
+cpChoice1 = cps[10]
 
 finalTree1 = rpart(change_type ~ .,
                   data = changeTrain_dem, 
@@ -683,7 +675,7 @@ classRate1
 
 ## Assess the Classification Tree Predictor with the change from 2012 to 2016
 ```{r, error=TRUE}
-cpChoice2 = cps[12]
+cpChoice2 = cps[5]
 
 finalTree2 = rpart(change_type ~ .,
                   data = Change08_12, 
@@ -692,7 +684,7 @@ finalTree2 = rpart(change_type ~ .,
 
 # Best model
 testPreds2 = predict(finalTree2, 
-              newdata = Change12_16,
+              newdata = Change12_16[,-1],
               type = "class")
 
 classRate2 = sum(testPreds2 == Change12_16$change_type, na.rm = T)/nrow(Change12_16)
@@ -700,6 +692,15 @@ classRate2 = sum(testPreds2 == Change12_16$change_type, na.rm = T)/nrow(Change12
 classRate2
 
 prp(finalTree2, extra =2)
+
+# Plotting show that the changing in prediction and in the actual data the same
+pred_df = data.frame(testPreds2)
+pred_plot = ggplot(data = pred_df, aes(pred_df$testPreds2)) + geom_bar()
+pred_plot
+
+actual_change_df = data.frame(Change12_16$change_type)
+acutal_plot = ggplot(data = actual_change_df, aes(actual_change_df$Change12_16.change_type)) + geom_bar()
+acutal_plot
 ```
 
 
