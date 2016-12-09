@@ -4,11 +4,17 @@ output: html_document
 Authors: Jun Tan (SID:26370084), Peirang Xu (SID:25117973), Ze Gong, Qing Guo, WU Peichen
 ---
 
+```{r setup, include=TRUE}
+# When your code blocks are working, change FALSE to TRUE
+# so that you document knits all of the code blocks
+substitute = FALSE
+```
+
 ### Step 1: DATA WRANGLING
 
 ## Merging dataset1 and dataset2: (Peirang Xu)
 
-```{r}
+```{r, eval=substitute}
 #2016 Voting Data
 require(scales)
 mydata1 = read.csv("http://www.stat.berkeley.edu/users/nolan/data/voteProject/2016_US_County_Level_Presidential_Results.csv")
@@ -62,7 +68,7 @@ When I merge the first two data frames, I firstly imported the two datasets of 2
 
 ## Merging data1 and dataset3: (Qing Guo)
 
-```{r}
+```{r, eval=substitute}
 require("rio")
 #2008 Voting Data
 #loading data from excel
@@ -114,7 +120,7 @@ For the excel dataset, the alaska voting data and DC voting data are missing in 
 
 ## Merging data2 and dataset4: (WU, Peichen)
 
-```{r}
+```{r, eval=substitute}
 #reading election results of 2004 into data frame mydata4 
 mydata4 = read.table("http://www.stat.berkeley.edu/~nolan/data/voteProject/countyVotes2004.txt", header = TRUE)
 mydata4$countyName = as.character(mydata4$countyName)
@@ -138,7 +144,7 @@ After merging the main data frame with the results of 2004, the number of rows i
 
 ## Merging data3 and dataset5: (Jun Tan)
 
-```{r}
+```{r, eval=substitute}
 # Read in data
 B01003 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/B01003.csv",head=TRUE,sep=",")
 B01003 = B01003[c(-1,-2)]
@@ -146,7 +152,7 @@ B01003 = B01003[c(-1,-2)]
 
 The first and second column are eliminated because they are not useful in terms of analyzing the correlation betweeen the voting statistic with other census data.
 
-```{r}
+```{r, eval=substitute}
 DP02 = read.csv(file="http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP02.csv",head=TRUE,sep=",")
 DP02 = DP02[c("GEO.display.label", "HC03_VC86", "HC03_VC87", "HC03_VC88", "HC03_VC89", "HC03_VC90", "HC03_VC91", "HC03_VC93", "HC03_VC94")]
 
@@ -156,7 +162,7 @@ DP03 = DP03[c("GEO.display.label", "HC03_VC50", "HC03_VC51", "HC03_VC52", "HC03_
 
 DP02 gets out the percentage of education level of the population and DP03 gets out the percentage of the occupation in different area of the population.
 
-```{r}
+```{r, eval=substitute}
 # Function for extract state and county/city from a vector of string. Return values have the first half as county, the bottom half as state
 get_county_state = function(county_states) {
   county_states = sapply(county_states, as.character)
@@ -175,7 +181,7 @@ get_county_state = function(county_states) {
 ```
 
 
-```{r}
+```{r, eval=substitute}
 # data process for B01003
 # Split county names and state names
 split_county_states = get_county_state(B01003$GEO.display.label)
@@ -202,7 +208,7 @@ B01003_clean$`black population` = as.numeric(B01003_clean$`black population`)
 
 The last step subset out the needed information to analysis including total population, white population and black population.
 
-```{r}
+```{r, eval=substitute}
 # Process DP02
 # Filter out county_name and state_name
 names = c("county_states", "9-12th grade no diploma(%)", "high school grad(%)", "some college, no deg(%)", "AS(%)", "BS(%)", "MS/PHD(%)", "% high school of higher(%)", "% BS or higher(%)")
@@ -217,7 +223,7 @@ DP02_clean = DP02[c("county_name", "state_name", names[2:length(names)])]
 ```
 
 
-```{r}
+```{r, eval=substitute}
 # Process DP03
 names = c("county_states", 
           "Agriculture, forestry, fishing and hunting, and mining(%)", 
@@ -238,7 +244,7 @@ DP03_clean = DP03[c("county_name", "state_name", wanted_coln)]
 
 B01003_clean, DP03_clean and DP02_clean are denoted to be dataframes with county_name, state_name and corresponding census information from the dataset.
 
-```{r}
+```{r, eval=substitute}
 # Merge B01003_clean, DP03_clean and DP02_clean
 inter1 = merge(x = B01003_clean, y = DP02_clean, by.x = c("county_name", "state_name"), by.y = c("county_name", "state_name"), all = TRUE)
 filter = sapply(inter1$county_name, is.na)
@@ -249,7 +255,7 @@ all_3 = all_3[, c(2, 1, 3:21)]
 
 The final dataframe "all_3" has all rows from DP03_clean, DP02_clean, and B01003_clean.
 
-```{r}
+```{r, eval=substitute}
 # Merge my dataframe with the master dataframe
 all_3$state_name = tolower(all_3$state_name)
 all_3$county_name = tolower(all_3$county_name)
@@ -260,7 +266,7 @@ data4 includes all information about voting from 2004, 2008, 2012 and 2016 and c
 
 ## Merging data4 and dataset6: (Gong Ze)
 
-```{r}
+```{r, eval=substitute}
 #GML data
 require(XML)
 GMLsource = "http://www.stat.berkeley.edu/users/nolan/data/voteProject/counties.gml"
@@ -270,7 +276,7 @@ countyname = xpathSApply(GMLroot, '//county/gml:name',xmlValue)
 ```
 
 
-```{r}
+```{r, eval=substitute}
 state_name = xpathSApply(GMLroot,'//state/gml:name', xmlValue)
 state_name_clean = gsub("\n[ ]*", "", state_name)
 state_count = sapply(state_name, function(i)
@@ -279,7 +285,7 @@ state_names = rep(state_name_clean, times=state_count)
 ```
 
 
-```{r}
+```{r, eval=substitute}
 latitude = as.numeric(xpathSApply(GMLroot, '//gml:Y', xmlValue))/1000000
 longitude = as.numeric(xpathSApply(GMLroot, '//gml:X', xmlValue))/1000000
 dataset6 = data.frame(countyname, state_names,latitude,longitude)
@@ -291,7 +297,7 @@ big_data = merge(x = data4, y = dataset6, by.x = c("county_name", "state_names")
 
 ## Clean the final dataframe
 
-```{r}
+```{r, eval=substitute}
 # clean the given dataframe
 # remove rows that have any of the column = NA removed by default and return the new dataframe. 
 # If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
@@ -315,7 +321,7 @@ cleanDF = function(df, colname, selected_name = NA){
 ```
 
 
-```{r}
+```{r, eval=substitute}
 # combine rows with same state name and similar county name because dataset classify county and city differently
 comb_similar_row = function(df){
   temp_df = df
@@ -350,14 +356,14 @@ comb_similar_row = function(df){
 ```
 
 
-```{r}
+```{r, eval=substitute}
 # clean the big_data by combining the rows with same state_name and similar county/city name
 final_data = comb_similar_row(big_data)
 ```
 
 There are about 200 rows reduction after combining similar rows because some cites were recorded as its city name in some years in some dataset but also recorded as the county it belongs to in some other years in some other datasets. That results in some data are missing in some row but actually those data are in the row paired with the city name or county name. Thus the 'comb_similar_row' merges those missing data together with the corresponding city/county name.
 
-```{r}
+```{r, eval=substitute}
 # pick rows with state_names are not alaska because alaska does not have sufficient information needed for analysis
 final_data_no_AK = cleanDF(final_data, colname = c("state_names"), selected_name = c("alaska"))
 save(final_data_no_AK,file="final_data_no_AK.rda")
@@ -371,7 +377,7 @@ Because most of data from Alaska are missing, including the voting from all diff
 
 
 ## Step 3 Map (Peirang Xu)
-```{r}
+```{r, eval=substitute}
 #clean up data for plotting
 all_counties = final_data_no_AL[complete.cases(final_data_no_AL[,38:39]),]
 all_counties = final_data_no_AL[complete.cases(final_data_no_AL[,c(3,5)]),]
@@ -379,7 +385,7 @@ all_counties = all_counties[all_counties$state_names != "hawaii",]
 ```
 
 
-```{r}
+```{r, eval=substitute}
 #plot election results for 2004 election
 library(ggplot2)
 library(maps)
@@ -418,7 +424,7 @@ p
 ```
 
 
-```{r}
+```{r, eval=substitute}
 #plot election results for 2008 election
 library(ggplot2)
 library(maps)
@@ -457,7 +463,7 @@ p
 
 
 ## Step 4: MODELING (Jun Tan, PEICHEN WU)
-```{r}
+```{r, eval=substitute}
 # load data
 load("final_data_no_AK.Rda")
 ```
@@ -465,7 +471,7 @@ load("final_data_no_AK.Rda")
 
 ## Predictor for the change from 2012 to 2016
 ## Add missing data of NA from Internet
-```{r}
+```{r, eval=substitute}
 load("final_data_no_AK.Rda")
 # population missing data get added 
 acadia_louisiana = final_data_no_AK$county_name == "acadia " & final_data_no_AK$state_names == "louisiana"
@@ -478,14 +484,14 @@ df_used = final_data_no_AK
 
 
 ## Loading Data
-```{r}
+```{r, eval=substitute}
 library(rpart)
 library(rpart.plot)
 library(ggplot2)
 ```
 
 ## factoring results in each county
-```{r}
+```{r, eval=substitute}
 ## results for 2008
 
 sum(df_used$vote_count_dem08 == df_used$vote_count_gop08, na.rm = TRUE) == 0
@@ -525,7 +531,7 @@ df_used$result16 = factor(df_used$result16, labels = c("dem", "gop"))
 
 
 ## factoring the change in each county
-```{r}
+```{r, eval=substitute}
 ## For changes from 2008 to 2012
 df_used$change08_12 = numeric(nrow(df_used))
 for (i in 1:nrow(df_used)) {
@@ -569,7 +575,7 @@ df_used$change12_16 = factor(df_used$change12_16, labels = c("gop to gop", "gop 
 ```
 
 ## Modeling
-```{r}
+```{r, eval=substitute}
 ## We only want the change variable and education statistics
 
 ## Data frame for change from 2008 to 2012
@@ -585,7 +591,7 @@ colnames(Change12_16)[1] = c('change_type')
 
 Create a 5-column matrix called `folds` that contains indices for partitioning the `Change08_12` data frame into a training data frame with 5 folds.
 
-```{r, error=TRUE}
+```{r, eval=substitute}
 ## divide "Change08_12" into a training set and a test set
 set.seed(24687531)
 nTotal = nrow(Change08_12)
@@ -603,7 +609,7 @@ folds1 = matrix(permuteIndices, ncol = v)
 
 
 ## Building the Tree 
-```{r, error=TRUE}
+```{r, eval=substitute}
 cps = c(seq(0.0001, 0.001, by = 0.0001), 
        seq(0.001, 0.01, by = 0.001),
        seq(0.01, 0.1, by = 0.01))
@@ -627,7 +633,7 @@ for (i in 1:v) {
 ```
 
 
-```{r, error = TRUE}
+```{r, eval=substitute}
 # find the best prediction
 cvRates = apply(preds1, 2, function(oneSet) {
   dev = as.numeric(changeTrain_dem$change_type)
@@ -642,7 +648,7 @@ cvRates = apply(preds1, 2, function(oneSet) {
 
 From our plot and the following statistics, choose a value for `cp`.  You may not want to choose the `cp` with the smallest error, but choose a slightly larger `cp` that has nearly the same error rate.
 
-```{r, error=TRUE}
+```{r, eval=substitute}
 library(ggplot2)
 ind = which.max(cvRates)
 
@@ -654,7 +660,7 @@ ggplot(data = cvRes, aes(x = cps, y = cvRates)) +
 
 
 ## Assess the Classification Tree Predictor with the Test set
-```{r, error=TRUE}
+```{r, eval=substitute}
 cpChoice1 = cps[10]
 
 finalTree1 = rpart(change_type ~ .,
@@ -674,7 +680,7 @@ classRate1
 
 
 ## Assess the Classification Tree Predictor with the change from 2012 to 2016
-```{r, error=TRUE}
+```{r, eval=substitute}
 cpChoice2 = cps[5]
 
 finalTree2 = rpart(change_type ~ .,
@@ -695,16 +701,16 @@ prp(finalTree2, extra =2)
 
 # Plotting show that the changing in prediction and in the actual data the same
 pred_df = data.frame(testPreds2)
-pred_plot = ggplot(data = pred_df, aes(pred_df$testPreds2)) + geom_bar()
+pred_plot = ggplot(data = pred_df, aes(pred_df$testPreds2)) + geom_bar() + labs(title = "Prediction changes from 2012 to 2016")
 pred_plot
 
 actual_change_df = data.frame(Change12_16$change_type)
-acutal_plot = ggplot(data = actual_change_df, aes(actual_change_df$Change12_16.change_type)) + geom_bar()
+acutal_plot = ggplot(data = actual_change_df, aes(actual_change_df$Change12_16.change_type)) + geom_bar() + labs(title = "Actual changes from 2012 to 2016")
 acutal_plot
 ```
 
 
-```{r}
+```{r, eval=substitute}
 # clean the given dataframe
 # remove rows that have any of the column = NA removed by default and return the new dataframe. 
 # If selected_name is not NA, then return the dataframe with rows that have any of the colname in the selected_name removed. 
@@ -731,7 +737,7 @@ cleanDF = function(df, colname, selected_name = NA){
 
 ## Knn training for 2016 winning party
 Data cleaning: add missing data found in internet or get rid of not needed data
-```{r}
+```{r, eval=substitute}
 # following code get ride of some rows because they do not have voting information from 2016 and can't be found online, thus cannot be included in the knn analysis because knn can't take any NA data
 final_data_no_AK = final_data_no_AK[c(-3200),]
 
@@ -740,7 +746,7 @@ df_used = cleanDF(df = final_data_no_AK, colname = selected_col)
 ```
 
 
-```{r}
+```{r, eval=substitute}
 choose16 = c(1,2,8, 10, 19:21, 38, 39)
 voting16 = df_used[, choose16]
 voting16$vote_percent_gop16 = as.numeric(sub("%", "", voting16$vote_percent_gop16))
@@ -760,7 +766,7 @@ voting12$win_gop = factor(x = win_gop, levels = c(TRUE, FALSE), labels = c(1, 2)
 why do we randomize based on the states not on the country?
 Bias sample may pick too many from certain region if certain state has more counties, then in the country level, those counties has a higher probability to be picked.
 
-```{r}
+```{r, eval=substitute}
 # find the index in df with corresponding "county_name" and "state_names" in selected_df
 corresponding_ind = function(selected_df, df, x){
    which((df$county_name==selected_df[x, "county_name"]) &
@@ -770,7 +776,7 @@ corresponding_ind = function(selected_df, df, x){
 ```
 
 
-```{r}
+```{r, eval=substitute}
 # choose the index for training set and test set
 set.seed(24687531)
 states = unique(voting12$state_names)
@@ -813,7 +819,7 @@ votingTest_gop = voting12[votingTest_gop_ind,]
 ```
 
 
-```{r}
+```{r, eval=substitute}
 nrow(votingTrain_gop_1)+nrow(votingTrain_gop_2)+nrow(votingTest_gop)
 ```
 
@@ -822,13 +828,13 @@ nrow(votingTest_gop)+nrow(votingTrain_gop_1)+nrow(votingTrain_gop_2) is one less
 
 #### cross validation
 Set up the 2 fold matrix
-```{r}
+```{r, eval=substitute}
 v = 2
 folds_gop_won = matrix(data = c(votingTrain_gop_ind_1, votingTrain_gop_ind_2), ncol = 2)
 ```
 
 
-```{r}
+```{r, eval=substitute}
 library(class)
 training_set_nrow = length(votingTrain_gop_ind_1)
 nTain_gop_won = training_set_nrow *2
@@ -850,7 +856,7 @@ for (i in 1:v) {
 
 
 Calculate the classification rate for each k values
-```{r, error = TRUE}
+```{r, eval=substitute}
 # find the best prediction
 kRates = apply(preds_gop_won, 2, function(oneSet) {
   gop_won = c(as.numeric(votingTrain_gop_1$win_gop), as.numeric(votingTrain_gop_2$win_gop))
@@ -865,7 +871,7 @@ kRates = apply(preds_gop_won, 2, function(oneSet) {
 
 From our plot and the following statistics, choose a value for `k`.  You may not want to choose the `k` with the smallest error, but choose a slightly larger `k` that has nearly the same error rate.
 
-```{r, error=TRUE}
+```{r, eval=substitute}
 library(ggplot2)
 ind = which.max(kRates)
 ks[ind]
@@ -887,7 +893,7 @@ Now that you have selected `k` using cross-validation on your training data, we 
 
 * Calculate the classification rate for `votingTest_gop` and `voting16`
 
-```{r, error=TRUE}
+```{r, eval=substitute}
 kChoice = ks[ind]
 
 training_set = rbind(votingTrain_gop_1,votingTrain_gop_2)
@@ -910,7 +916,7 @@ voting16_gop_classRate
 ```
 
 
-```{r}
+```{r, eval=substitute}
 result = as.data.frame(table(voting16_gop_pred))
 predict_gop_win = result[result$voting16_gop_pred == 1, "Freq"] > result[result$voting16_gop_pred == 2, "Freq"]
 
