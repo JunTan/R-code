@@ -376,30 +376,44 @@ save(final_data_no_AK,file="final_data_no_AK.rda")
 Because most of data from Alaska are missing, including the voting from all different years, Alaska won't contribute a lot to our predictions and plots, it can be removed without causing significant impact.
 
 Below is the name description of the final dataframe:
- [1] "county name"                                                                  [2] "state names"                                                                  [3] "vote count of republican in 08"                                               [4] "vote percent of republican in 08"                                             [5] "vote count of democrat in 08"                                                 [6] "vote percent of democrat in 08"                                               [7] "vote count of republican in 16"                                               [8] "vote percent of republican in 16"                                             [9] "vote count of democrat in 16"                                                 [10] "vote percent of democrat in 16"                                              [11] "vote count of republican in 12"                                              [12] "vote percent of republican in 12"                                            [13] "vote count of democrat in 12"                                                [14] "vote percent of democrat in 12"                                                         [15] "vote count of republican in 04"                                                                             
-[16] "vote count of democrat in 04"                                                                             
-[17] "vote percent of republican in 04"                                                                           
-[18] "vote percent of democrat in 04"                                                                           
-[19] "total population"                                                                             
-[20] "white population"                                                                             
-[21] "black population"                                                                             
-[22] "9-12th grade no diploma(%)"                                                                   
-[23] "high school grad(%)"                                                                          
-[24] "some college, no deg(%)"                                                                      
-[25] "AS(%)"                                                                                        
-[26] "BS(%)"                                                                                        
-[27] "MS/PHD(%)"                                                                                    
-[28] "% high school of higher(%)"                                                                   
-[29] "% BS or higher(%)"                                                                            
-[30] "Agriculture, forestry, fishing and hunting, and mining(%)"                                    
-[31] "Construction"                                                                                 
-[32] "Manufacturing"                                                                                
-[33] "Retail trade"                                                                                 
-[34] "Information(%)"                                                                               
-[35] "Professional, scientific, and management, and administrative and waste management services(%)"
-[36] "Educational services, and health care and social assistance(%)"                               
-[37] "Public administration(%)"                                                                     
-[38] "latitude"                                                                                     
+[1] "county name"                                                                 
+[2] "state names"                                                                 
+[3] "vote count of republican in 08"                                              
+[4] "vote percent of republican in 08"                                            
+[5] "vote count of democrat in 08"                                                
+[6] "vote percent of democrat in 08"                                              
+[7] "vote count of republican in 16"                                              
+[8] "vote percent of republican in 16"                                            
+[9] "vote count of democrat in 16"                                                
+[10] "vote percent of democrat in 16"                                             
+[11] "vote count of republican in 12"                                             
+[12] "vote percent of republican in 12"                                            
+[13] "vote count of democrat in 12"                                                
+[14] "vote percent of democrat in 12"                                              
+[15] "vote count of republican in 04"                                              
+[16] "vote count of democrat in 04"                                                
+[17] "vote percent of republican in 04"                                          
+[18] "vote percent of democrat in 04"                                            
+[19] "total population"                                                         
+[20] "white population"                                                       
+[21] "black population"                                                       
+[22] "percent of population 9-12th grade no diploma"                              
+[23] "percent of population high school graduate"                                 
+[24] "percent of population has some college no degree"                           
+[25] "percent of population assocative degree"                            
+[26] "percent of population has BS degree"                                     
+[27] "percent of population has MS/PHD degress"                               
+[28] "percent of percent of population has a degree of high school or higher"   
+[29] "percent of percent of population has a degree of BS or higher"              
+[30] "percent of population occupation is Agriculture, forestry, fishing and hunting, and mining"                                    
+[31] "percent of population occupation is Construction"                     
+[32] "percent of population occupation is Manufacturing"                      
+[33] "percent of population occupation is Retail trade"                       
+[34] "percent of population occupation is Information"                            
+[35] "percent of population occupation is Professional, scientific, and management, and administrative and waste management services"
+[36] "percent of population occupation is Educational services, and health care and social assistance"                               
+[37] "percent of population occupation is Public administration"                
+[38] "latitude"                                                             
 [39] "longitude"
 
 
@@ -1164,7 +1178,8 @@ In this knn training, the resulting classification rate is about 0.86. The predi
 Even though the prediction output is accurate but I am highly suspicious about the feature data we used for training because census data is taken once per decade and we are using same feature data for 2012 and 2016. Ideally, 2012 and 2016 should not have the same census data. The prediction is supposed to be the same if the trainning uses the same set of census data. In our case, the classification rate is not 100% but is very high because we introduce the voting percentage in 2012 and in 2016 as part of the feature data. 
 
 
-
+## Discussion
+The finding the in the prediction of the 2016 election result is the same as the one shown in the map of "county voting results for 2016 election" because the overall red area (where republican is the leading party) is greater than the blue's. 
 
 
 
@@ -1186,11 +1201,6 @@ Even though the prediction output is accurate but I am highly suspicious about t
 
 "http://www.stat.berkeley.edu/~nolan/data/voteProject/census2010/DP03.csv"
 
-
-## Package used
-scales
-XML
-rio
 
 ## System info
 ```{r}
