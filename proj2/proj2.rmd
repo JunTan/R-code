@@ -926,7 +926,7 @@ testPreds1 = predict(finalTree1,
 
 classRate1 = sum(testPreds1 == changeTest_dem$change_type, na.rm = T)/nrow(changeTest_dem)
 
-classRate1
+paste("classification rate of the testing set and training set:", classRate1)
 ```
 
 
@@ -946,17 +946,17 @@ testPreds2 = predict(finalTree2,
 
 classRate2 = sum(testPreds2 == Change12_16$change_type, na.rm = T)/nrow(Change12_16)
 
-classRate2
+paste("classification rate of the changes from 2012 to 2016:", classRate2)
 
-prp(finalTree2, extra =2)
+prp(finalTree2, extra =2) 
 
 # Plotting show that the changing in prediction and in the actual data the same
 pred_df = data.frame(testPreds2)
-pred_plot = ggplot(data = pred_df, aes(pred_df$testPreds2)) + geom_bar() + labs(title = "Prediction changes from 2012 to 2016")
+pred_plot = ggplot(data = pred_df, aes(pred_df$testPreds2)) + geom_bar() + labs(x = "changes from 2012 to 2016", title = "Prediction changes from 2012 to 2016")
 pred_plot
 
 actual_change_df = data.frame(Change12_16$change_type)
-acutal_plot = ggplot(data = actual_change_df, aes(actual_change_df$Change12_16.change_type)) + geom_bar() + labs(title = "Actual changes from 2012 to 2016")
+acutal_plot = ggplot(data = actual_change_df, aes(actual_change_df$Change12_16.change_type)) + geom_bar() + labs(x = "changes from 2012 to 2016",title = "Actual changes from 2012 to 2016")
 acutal_plot
 ```
 
@@ -1151,11 +1151,11 @@ voting16_gop_pred = knn(train = training_set[,c(3:9)], test = voting16[, c(3:9)]
 
 votingTest_gop_classRate = sum(votingTest_gop_pred == votingTest_gop$win_gop) / nrow(votingTest_gop)
 
-votingTest_gop_classRate
+paste("classification rate of training set and testing set is", votingTest_gop_classRate)
 
 voting16_gop_classRate = sum(voting16_gop_pred == voting16$win_gop) / nrow(voting16)
 
-voting16_gop_classRate
+paste("classificatin rate of the 2016 election result and prediction result is",voting16_gop_classRate)
 ```
 
 
