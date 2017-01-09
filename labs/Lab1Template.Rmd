@@ -1,0 +1,168 @@
+---
+title: 'STAT 133 Lab: R Expressions and Subsetting'
+author: "Jun Tan 26370084"
+output: word_document
+---
+Section: 4:00-6:00 
+GSI: Cindy Kang
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can choose to knit your document to an HTML, Word, or PDF file.
+
+You can embed an R code chunk in the document like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+*Once you have read the above, you can remove it from your Rmd file.*
+
+### Instructions
+Write R code in the designated code chunks to answer each of the questions. As you work, you may find it helpful to be able to run your code. You can run a single line of code by pressing Ctrl + Enter. You can run an entire code chunk by clicking on the green arrow in the upper right corner of the code chunk. 
+
+Knit the document from time to time to make sure that your code runs without errors from top to bottom in a fresh R environment. 
+
+The code below controls the number of significant digits shown for the return values in your knitted document.
+
+```{r}
+options(digits = 3)
+```
+
+
+### Question 1
+Type `?rnorm()` into the console to pull up the help page for the set of R functions for the normal distribution. The Usage section shows you what arguments are needed to call the function.  The Arguments section explains what input is expected for each of these arguments.
+
+Run the code below to use `rnorm()` to generate 5 random values from a normal distribution with center (mean) 17 and spread (standard deviation) 3.
+
+```{r, question1}
+set.seed(1234) # leave this alone
+
+rnorm(n = 5, mean = 17, sd = 3)
+```
+
+*Check your answer*: If you did this right, you should have obtained
+numbers that are roughly: 13.38 17.83 20.25  9.96 18.29.
+
+
+
+### Question 2
+Next we create a vector called `normsamps` that contains 1000 random values from a normal curve with mean 1 and standard deviation 2.
+
+```{r, question2}
+set.seed(1234) # leave this alone
+
+normsamps = rnorm(n = 1000, mean = 1, sd = 2)
+```
+*Check your answer*: After creating `normsamps`, type `head(normsamps)` 
+in the console to look at the first few values of the vector. Check that
+they are close to the following numbers -1.41  1.55  3.17 -3.69  1.86  2.01 
+
+
+
+### Question 3
+Replace "#CODE" in the sentence below with the appropriate R expressions.
+You may find it helpful to look at the help file for `mean()`.
+An example is given.
+
+*Example:* The maximum value in `normsamps` is `r max(normsamps)`. 
+
+The 5% trimmed mean is obtained by taking the mean of the middle 90% of the
+values (trimming off 10% of the values). The 5% trimmed mean of 
+`normsamps` is `r mean(normsamps, 0.05)`, and the SD of `normsamps` is `r sd(normsamps)`.
+
+### Question 4
+Calculate the fraction of values in `normsamps` that are less than 3. 
+Write your solution so that it coerces a logical vector to numeric, without
+using the function `as.numeric()`.
+
+```{r, question4}
+# Put your code here
+lessThree = sum(normsamps < 3)
+total = length(normsamps)
+fraction = lessThree / total
+
+```
+
+
+### Question 5
+Look up the help for `rnorm()` again by typing `?rnorm` into the console. 
+You will see a few other functions listed, such as `pnorm()`, `dnorm()`, and
+`qnorm()`. 
+
+Use one of these functions to calculate the area under the Normal(1, 2) curve
+to the left of 3. That is, find the chance of drawing a value less than 3
+from this distribution.
+
+```{r, question5}
+# Put your code here
+pnorm(3, 1, 2)
+
+```
+
+
+## Subsetting a Data Frame
+
+Begin by running the following code chunk to load the objects that you will be practicing subsetting with. This code loads the data frame called *family* into your workspace.
+
+```{r}
+load(url("http://www.stat.berkeley.edu/users/nolan/data/afamily.rda"))
+```
+
+### Question 6
+Make a new data frame of the males in the family who are over weight. Call this data frame *maleOWt*. Be sure to keep all of the variables in the orginal data frame. Use subsetting by logical to create this data frame.
+
+```{r}
+maleOWt = family[family$overWt == TRUE & family$sex == "m",]
+
+```
+
+### Question 7 
+For the new data frame, *maleOWt*, that you created, change the weight to missing for any individual who is named Tom. Do not use subsetting by position to do this.
+
+```{r}
+names(maleOWt)
+maleOWt$weight[maleOWt$firstName=="Tom"] = NA
+```
+
+
+### Question 8 
+Drop the variable gender from this data frame. Use subsetting
+by a logical expression to do this.
+
+```{r}
+ind = names(maleOWt) != "sex"
+maleOWt[ ,ind]
+```
+
+
+### Question 9
+Add a factor vector called *HiLo* to *family*, where the levels are "hi" and "low". The low category corresponds to males with a BMI below 25 and females with a BMI below 24. (Hint: try creating a logical vector first and convert this logical vector into a factor vector with the *factor()* function.)
+
+```{r}
+HiLo_interStep = (fsex == "m" & fbmi < 25) | (fsex == "f" & fbmi < 24)
+HiLo = factor(HiLo_interStep, levels = c(TRUE, FALSE), labels = c("low", "high"))
+family$HiLo = HiLo
+```
+
+Once you have completed these tasks, check that you have written your name at
+the top of this document and that the document can be knitted.
+
+Finally, it's good practice to print the output of `sessionInfo()` so that others who want to reproduce your results know what packages and version of R you were using when you first did your analysis. 
+
+```{r, sessionInfo}
+# leave this as-is:
+sessionInfo()
+```
+
+Submit the Rmd file to bcourses. Do Not submit the knitted file.
+

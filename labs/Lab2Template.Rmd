@@ -1,0 +1,140 @@
+---
+title: "Intro to ggplot"
+output: html_document
+---
+```{r}
+require(ggplot2)
+```
+
+##  Babies Data
+
+In this lab we will create some of the plots in Chapter 3 using ggplot. These plots are for the babies data frame.  The data have been cleaned and are ready for you to load into your session with the following call. Refer to chapter 3 for a description of the variables.
+
+```{r cars}
+load(url(
+  "http://www.stat.berkeley.edu/users/nolan/data/babiesLab133.rda"
+  ))
+```
+
+## Parts to a ggplot
+
+Recall from class that there are 5 `notions' to a ggplot:
+
+* The plot object (created by *ggplot()*). That can be used to identify the data frame and set up the aesthetic mapping of variables to aspects of the plot.
+
+* The aesthetic mapping which connects variables in a data frame to plotting features such as the x axis, y axis, color, line type, etc.
+
+* Layers - These contain visual components that are added to the plot. A layer consists of a geom (visual representation) and a statistic (operation on variable). Each geom has a default statistic and we typically use the default. We can specify a layer with *layer()*, but we more typically use the shortcut functions *geom_VisualPiece()* and the default values that are set up with this function.
+
+* Scales - These allow us to control how an aesthetic is represented in the plot. Through the *scale_XXX_XXX()* functions we can, e.g., specify axis labels (name), axis limits, transformations, colors, line types, etc.
+
+* Themes - The theme allows us to control non-data aspects of the graphic such as font size, location of legend, background colors, etc.
+
+
+We will demonstrate these various pieces as we make 4 plots of the babies data. These include a histogram, boxplot, bar plot, and scatter plot.  See the code from Wed class for more detailed examples.
+
+## The Data and the Mapping
+
+We plan to use the babies data frame throughout this lab so we can set up a graph object that specifies the data frame and save it to a variable for future use:
+
+```{r density}
+basic = ggplot(data = babies) 
+```
+
+Note that we can specify aesthetics in the *ggplot()* function as well.
+For example,
+
+```{r}
+basicParity = ggplot(data = babies, mapping = aes(parity))
+```
+
+
+## Histogram of Parity
+
+We begin by making the histogram with
+
+```{r}
+basicParity + geom_histogram()
+```
+
+Notice the warning message and the plot is less than ideal. Let's take the advice given and fix the histogram.
+We can specify a binwidth with *binwidth* or we can specify the endpoints of the bins with *breaks*. Try both (not in the same call). 
+Change NULL in each of the plots below to have a binwidth of 1 for the first example and breaks that are 1 apart from 0 to 6 and 2 apart from 7 through 13. Have the bins centered on the integers. Remember the seq() function
+
+```{r}
+basicParity + geom_histogram(binwidth = 1)
+basicParity + geom_histogram(breaks = c(seq(-0.5, 6.5, by = 1), seq(6.6, 14, by = 2)))
+```
+
+
+## Boxplots of Birth Weight by Smoking Status
+
+Create a boxplot (with geom_boxplot) where we have a separate box for each level of smoking status. What is the x-axis aesthetic? What is the y-axis aesthetic?
+
+```{r}
+boxbasic = ggplot(data = babies) 
+boxbasic + geom_boxplot(mapping = aes(x = smoke, y = wt))
+
+```
+
+One problem here is that there are some NAs in somking status.  We want to eliminate them. We can drop any rows in babies that have NA for smoking status when we specify the data frame to use. Also, we want to add more informative axes labels.  
+
+
+```{r}
+
+ggplot(data = babies[!is.na(babies$smoke),]) +
+  scale_x_discrete(name = "smoke") +
+  scale_y_continuous(name = "count") + geom_boxplot(mapping = aes(x = smoke, y = wt))
+```
+
+## Bar Plot of Smoking Status 
+
+We want to know the numbers of mothers in each smoking status. Make a
+bar plot for smoking status and drop the NAs
+
+```{r}
+ggplot(data = babies[!is.na(babies$smoke),]) + 
+  geom_bar(mapping = aes(x = smoke))
+
+```
+
+It's more work to create Cleveland's dot plot.  Here's an example of how to go about doing it.
+
+```{r}
+
+ggplot(babies) + 
+  geom_point(aes(x = smoke), stat="count") +
+  coord_flip() +
+  theme( # remove the vertical grid lines
+    panel.grid.major.x = element_blank() ,
+    # explicitly set the horizontal lines (or they will disappear too)
+    panel.grid.major.y = element_line(linetype=3, color="darkgray"),
+    axis.text.y=element_text(size=rel(0.8)) ) 
+
+```
+
+
+## Scatter plot of birth weight and mother's height
+
+We can add multiple layers to a plot. We want to make a scatter plot that shows the relationship between the baby's birth weight and the mothers height. We want to only look at Never and Current smokers.
+
+Begin by making a scatter plot of these points.  Use color to identify the group each baby belongs to. Jitter the points, shrink the points, and use transparency to reduce the problems with overplotting.
+
+
+```{r, eval=TRUE}
+plot2 = ggplot(babies[ babies$smoke == 'Never' | babies$smoke == 'Current', ], 
+               mapping = aes(x = bwt, y = ht , color = smoke)) +
+  geom_point(position = 'jitter', size =3 , alpha = 0.5) 
+plot2  
+```
+
+Ne we can add another layer to plot2 that includes two fitted lines, for each smoking status. Fix the labels.
+
+```{r, eval=TRUE}
+plot2 + 
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(name = "baby's weight") +
+  scale_y_continuous(name = "mother's height")
+```
+
+BE SURE TO REMOVE eval=FALSE or change to eval = TRUE so that the document knits properly.

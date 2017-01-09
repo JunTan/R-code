@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1></h1>
+    <h2>Vectors, Data Frames, Subsetting</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h1>This Week...</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Data Types</li>
+<li>Vectors</li>
+<li>Data Frames </li>
+<li>Subsetting</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h1>Data Types in R</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Numeric (real numbers) </li>
+<li>Character (strings of text)</li>
+<li>Logical - (<code>TRUE</code> and <code>FALSE</code> values)</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h1>Vectors</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Vectors are the most basic data type in R</li>
+<li>They can only hold only one type of data</li>
+</ul>
+
+<p>You can create vectors using the command <code>c</code>.  </p>
+
+<pre><code class="r">x &lt;- c(3, 4, 8, 2)
+</code></pre>
+
+<p>You can create sequences of numbers using <code>:</code></p>
+
+<pre><code class="r">1:6
+</code></pre>
+
+<pre><code>## [1] 1 2 3 4 5 6
+</code></pre>
+
+<p>You can name elements of your vector using the <code>names()</code> function</p>
+
+<pre><code class="r">names(x) &lt;- c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <article data-timings="">
+    <p>What is the class of the following vectors?</p>
+
+<pre><code class="r">c(1, 2, 5, TRUE, FALSE)
+</code></pre>
+
+<pre><code class="r">c(1, 2, &quot;a&quot;, 8, TRUE, &quot;c&quot;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h1>Methods of Subsetting</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Logical (logical  vector  where   TRUEs   denote  the 
+elements    in  the subset)</li>
+<li>Position (integer vector  with    the positions   of  the 
+elements    in  the subset)</li>
+<li>Exclusion (vector of  negative    integers    for 
+positions   to  exclude from    subset)</li>
+<li>Inclusion (character  vector  of  names   of  elements    in  the subset, assuming object has named elements)</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h1>Subsetting a Vector</h1>
+  </hgroup>
+  <article data-timings="">
+    <p>We have the following named vector x</p>
+
+<pre><code class="r">x
+</code></pre>
+
+<pre><code>## a b c d 
+## 3 4 8 2
+</code></pre>
+
+<p>You can pick out certain elements of the vector using square brackets</p>
+
+<p>How can we subset to get only the first and third elements of our vector <code>x</code>?</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">x[c(1, 3)] #Subsetting by Position
+</code></pre>
+
+<pre><code>## a c 
+## 3 8
+</code></pre>
+
+<pre><code class="r">x[-c(2,4)] #Subsetting by Exclusion
+</code></pre>
+
+<pre><code>## a c 
+## 3 8
+</code></pre>
+
+<pre><code class="r">x[c(&quot;a&quot;, &quot;c&quot;)] #Subsetting by Names
+</code></pre>
+
+<pre><code>## a c 
+## 3 8
+</code></pre>
+
+<pre><code class="r">x[c(TRUE, FALSE, TRUE, FALSE)] #Subsetting by Logicals
+</code></pre>
+
+<pre><code>## a c 
+## 3 8
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h1>Data Frame</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>The most common way of storing data in R is the data frame </li>
+<li>Consists of a list of named equal-length vectors</li>
+<li>We can make a data frame, using the <code>data.frame()</code> command.<br></li>
+</ul>
+
+<pre><code class="r">df &lt;- data.frame(x = seq(1, 3), y = c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), z = c(T, F, F), stringsAsFactors = F)
+df
+</code></pre>
+
+<pre><code>##   x y     z
+## 1 1 a  TRUE
+## 2 2 b FALSE
+## 3 3 c FALSE
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h1>Some commands for data frames and other 2-D Objects</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><code>nrow</code> and <code>ncol</code> give the number of rows and columns</li>
+<li><code>rownames()</code> and <code>colnames()</code> act like <code>names</code>, but for the dimensions</li>
+<li>You can combine 2-D objects with <code>cbind</code> and <code>rbind</code></li>
+</ul>
+
+<pre><code class="r">x &lt;- data.frame(&quot;a&quot; = c(1,2), &quot;b&quot; = c(2,3), &quot;c&quot; = c(3,4))
+x
+</code></pre>
+
+<pre><code>##   a b c
+## 1 1 2 3
+## 2 2 3 4
+</code></pre>
+
+<pre><code class="r">y &lt;- data.frame(&quot;d&quot; = c(4,5), &quot;e&quot; = c(5,6)) 
+y
+</code></pre>
+
+<pre><code>##   d e
+## 1 4 5
+## 2 5 6
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">cbind(x,y)
+</code></pre>
+
+<pre><code>##   a b c d e
+## 1 1 2 3 4 5
+## 2 2 3 4 5 6
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h1>Subsetting an element from a data frame</h1>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we have the following data frame</p>
+
+<pre><code class="r">df
+</code></pre>
+
+<pre><code>##   x y     z
+## 1 1 a  TRUE
+## 2 2 b FALSE
+## 3 3 c FALSE
+</code></pre>
+
+<p>How can we access the last element (in the bottom right position)?</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <article data-timings="">
+    <p>We can access a specific element in a data frame using <code>[]</code>, indexed by row and column</p>
+
+<pre><code class="r">df[3, 3] #Subsetting by Position
+</code></pre>
+
+<pre><code>## [1] FALSE
+</code></pre>
+
+<pre><code class="r">df[3, &quot;z&quot;] #Subsetting by Name
+</code></pre>
+
+<pre><code>## [1] FALSE
+</code></pre>
+
+<pre><code class="r">df[-c(1,2), -c(1,2)] #Subsetting by Exclusion
+</code></pre>
+
+<pre><code>## [1] FALSE
+</code></pre>
+
+<pre><code class="r">df[c(FALSE, FALSE, TRUE), c(FALSE, FALSE, TRUE)] #Subsetting by Logicals
+</code></pre>
+
+<pre><code>## [1] FALSE
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <article data-timings="">
+    <p>We can access a particular column of a data frame using <code>[]</code> or <code>$</code>
+Recall our data frame <code>df</code>:</p>
+
+<pre><code class="r">df
+</code></pre>
+
+<pre><code>##   x y     z
+## 1 1 a  TRUE
+## 2 2 b FALSE
+## 3 3 c FALSE
+</code></pre>
+
+<pre><code class="r">df$y
+</code></pre>
+
+<pre><code>## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;
+</code></pre>
+
+<pre><code class="r">df[ , 2]
+</code></pre>
+
+<pre><code>## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;
+</code></pre>
+
+<pre><code class="r">df[ , &quot;y&quot;]
+</code></pre>
+
+<pre><code>## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <hgroup>
+    <h1>Sort vs. Order</h1>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we have the following vector <code>x</code>:</p>
+
+<pre><code class="r">x &lt;- c(13, 6, 18, 2, 11)
+sort(x)
+</code></pre>
+
+<pre><code>## [1]  2  6 11 13 18
+</code></pre>
+
+<pre><code class="r">order(x)
+</code></pre>
+
+<pre><code>## [1] 4 2 5 1 3
+</code></pre>
+
+<p><code>sort</code> sorts the values of a vector in increasing order</p>
+
+<p><code>order</code> gives the <em>indices</em> (positions) of the values in increasing order</p>
+
+<p>Note: For some vector x, <code>sort(x)</code> gives the same result as <code>x[order(x)]</code></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='This Week...'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Data Types in R'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Vectors'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='NA'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Methods of Subsetting'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Subsetting a Vector'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='NA'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Data Frame'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Some commands for data frames and other 2-D Objects'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='NA'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Subsetting an element from a data frame'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='NA'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='NA'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='Sort vs. Order'>
+         14
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

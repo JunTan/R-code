@@ -1,0 +1,184 @@
+---
+title: "World Map"
+output: html_document
+author: Jun Tan
+---
+
+THIS PROJECT MAY BE DONE IN PAIRS. IF YOU CHOOSE TO HAVE A PARTNER, THEN THE PARTNER MUST BE SOME ONE DIFFERENT THAN THE PARTNER FROM THE LAST HOMEWORK
+
+TURN IN THE KNITTED DOCUMENT AND THE RMD FILE FOR THIS ASSIGNMENT
+
+## Introduction
+
+In this HW, you will be asked to create a map of infant mortality and population for countries around the world.  The source for the data is the 2015 CIA Factbook,
+which is an XML file that I have placed on my Website at 
+
+(http://www.stat.berkeley.edu/users/nolan/data/factbook2015.xml)
+
+
+Before reading the data into R, use a plain text editor or a browser such as firefox to search for the infant mortality and population statistics for the countries in the factbook. The factbook is a very large file and is slow to load into the browser and a bit difficult to serach.  Try searching for the term 'infant mortality' to find the node that has the desired values. Examine the node and its children carefully to figure out how to extract the information that you want. The population statistics appear in a similar format in the document.
+
+## Parsing the XML Document
+
+It will be very helpful to refer to the lab material when figuring out how to write the code to read the XML document and extract the desired information.
+
+Begin by using `xmlParse` and `xmlRoot` to read in the document and locate the root. Assign the document to `fbDoc` and the root to `fbRoot`
+
+```{r, error=TRUE}
+require(XML)
+uCIA =   "http://www.stat.berkeley.edu/users/nolan/data/factbook2015.xml"
+
+fbDoc = xmlParse(uCIA)
+  
+fbRoot = xmlRoot(fbDoc)
+```
+
+## Extract Infant Mortality
+
+Use the structure that you discovered in your investigation of the XML document to extract a vector of infant mortality rates and a vector of corresponding country codes from the factbook. Assign these to the variables `imRate` and `imCtry`, respectively.
+
+```{r, error=TRUE}
+rate_nodes = getNodeSet(fbRoot, '//field[@name="Infant mortality rate"]/rank')
+
+imRate = as.numeric(xmlSApply(rate_nodes, xmlGetAttr, "number"))
+  
+imCtry = xmlSApply(rate_nodes, xmlGetAttr, "country")
+
+```
+
+Convert the rates to numeric and combine the two vectors into a data frame called `imDF`.
+
+```{r, error=TRUE}
+imDF = data.frame(imRate, imCtry, 
+                  stringsAsFactors = FALSE)
+```
+
+## Extract Population
+
+Use the structure that you discovered in your investigation of the XML document to extract a vector of country populations and a vector of corresponding country codes from the factbook. Assign these to the variables `pop` and `ctry`, respectively. Make sure that `pop` is numeric. Combine these two vectors into a data frame called `popDF`.
+
+```{r, error=TRUE}
+pop_nodes = getNodeSet(fbRoot, '//field[@name="Population"]/rank')
+
+pop = as.numeric(xmlSApply(pop_nodes, xmlGetAttr, "number"))
+  
+ctry =  xmlSApply(pop_nodes, xmlGetAttr, "country")
+
+  
+popDF = data.frame(ctry, pop, stringsAsFactors = FALSE)
+```
+
+
+
+## Combining Infant Mortality and Population Statistics
+
+Note that infant mortality values for each country do not appear in the same order as population values. This is because the countries are arranged in decreasing order for each quantity. That is, the most populous country does not have the highest infant mortality. Additionally, it may be that values are not available for all of countries for some of the variables.
+
+Use the `merge` function to combine these two data frames into one. Keep only those countries that appear in both data frames. (Read the documentation for `merge` to figure out how to do this. Pay particular attention to the parameters `by.x`, `by.y`, `all`, `all.x`, and `all.y`) Call the new data frame fbDF
+
+```{r, error=TRUE}
+colnames(imDF) <- c("imRate", "ctry")
+fbDF = merge(imDF, popDF)
+```
+
+## Country Centers
+
+The following CSV file contains the 2-letter ISO country code and the latitude and longitude of the center of each country. 
+
+(http://www.stat.berkeley.edu/users/nolan/data/country_latlon2016.csv)
+
+Read these data into R. Call this new data frame `latlon`. 
+
+```{r, error = TRUE}
+latlon = read.csv("http://www.stat.berkeley.edu/users/nolan/data/country_latlon2016.csv") 
+
+```
+
+##  Country Codes in the CIA Factbook
+
+Unfortunately, we cannot simply merge the two data frames `latlon` and `fbDF` because the country codes that the CIA uses are not the same country codes used in the latitude and longitude file.  The `latlon` data frame uses the traditional ISO 2-letter country codes. Fortunately, there is a table in the factbook that contains the mapping from one to the other.
+
+Here's a snippet of the table that shows the CIA abbreviation for China (ch) and the corresponding ISO abbrevation (CN).
+
+```
+<row>
+<cell country="ch" content="China"/>
+<cell center="1" content="CH"/>
+<cell content="CN"/>
+<cell content="CHN"/>
+<cell content="156"/>
+<cell center="1" content="CHN"/>
+<cell center="1" content=".cn"/>
+<cell content="see also Taiwan"/>
+</row>
+```
+
+
+
+Use an XPath expression to locate the row nodes that contain these mappings:
+
+```{r, error=TRUE}
+rowNodes = getNodeSet(fbRoot,
+                      '//columnHeader[@title="ISO 3166"]/../row')
+```
+
+Next, `sapply` the `xmlGetAttr` function twice to these `rowNodes` to extract the CIA abbreviations and the matching ISO abbreviations, call them `cia` and `iso`, respectively. Put these into a data frame called `mapCode`.
+
+```{r, error=TRUE}
+cia = sapply(rowNodes, function(node) xmlGetAttr(node[[1]], "country"))
+
+iso = sapply(rowNodes, function(node) xmlGetAttr(node[[3]], "content"))
+
+mapCode = data.frame(cia, iso)
+```
+
+
+## Final Merge
+
+At last, we can merge all of the data into one data frame. We have `fbDF` that contains the CIA Factbook variables and a country code; `latlon` that contains the latitude and longitude and a country code (in `iso.3166.country`);  and `mapCode` that contains 2 country codes -- the CIA (in `cia`) and the ISO (in `iso`). 
+
+Call `merge` twice to first merge `mapCode` with `fbDF` and then merge the resulting data frame with `latlon`.
+Call the final data frame `ctryStats`. Check that the data have been properly merged.
+
+```{r, error=TRUE}
+colnames(mapCode) <- c("ctry", "iso")
+map_fbDF = merge(mapCode, fbDF)
+colnames(latlon) <- c("iso", "latitude", "longitude")
+ctryStats = merge(map_fbDF, latlon)
+```
+
+## Map
+
+Use `ggplot` or one of its related packages to make a world map. This map should have the following characteristics
+
+* Each country is represented by a circle centered at the latitude and longitude provided in the CSV file
+
+* The circle should be filled with a color that corresponds to the infant mortality rate. Consider whether you want to make a transformation of the rate, or if you want to set up your own colors or gradient for the colors.
+
+* The size (area) of each circle should be proportional to the population of the country (consider a square root or log transformation of the population). Since we want to be able to see all of the countries, you might want to provide a minimum size for each circle. Similarly, you may want to cap the larger populations. 
+
+In order to make this map, you will want to carry out some Web research to figure out how best to use ggplot (or a related package) to make the map. Do not use base R mapping facilities to make the map. Have fun puzzling through your map making!
+
+```{r final, error=TRUE}
+library(ggplot2)
+library(maps)
+mapWorld = map_data("world")
+ggplot() + geom_polygon(data=mapWorld, aes(x=long, y=lat, group = group),colour="white", fill="green" )+
+  geom_point(data=ctryStats, aes(x=longitude, y=latitude, size = pop, color=imRate)) +
+  scale_colour_gradientn("infant mortalit Rate", 
+                         colours=c( "#FF6633","#660000")) +
+  scale_size(name = "population", range(0.1,1))
+
+```
+
+
+Some links that you may find useful:
+
+* http://zevross.com/blog/2014/07/16/mapping-in-r-using-the-ggplot2-package/
+
+* https://uchicagoconsulting.wordpress.com/tag/r-ggplot2-maps-visualization/
+
+* https://www.r-bloggers.com/r-beginners-plotting-locations-on-to-a-world-map/
+
+* http://stat405.had.co.nz/ggmap.pdf
+

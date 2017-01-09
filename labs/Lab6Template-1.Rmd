@@ -1,0 +1,89 @@
+---
+title: "Lab 6: Regular Expression Practice"
+output: html_document
+---
+
+## Introduction
+
+In this lab, you will write some regular expressions to extract features from text data. We will use a small sample of the tweets that you will use for your homework.
+
+These are available on the Web. Load them into your session with
+
+```{r}
+load(url("http://www.stat.berkeley.edu/users/nolan/data/testTweets.rda"))
+```
+
+Explore the data frame. How many variables does it have, what's the class of each, and how many tweets are included?
+It has 3 variables. 
+Ttext       Tdate        Tdev 
+"character" "character" "character" 
+It has 5 tweets
+
+```{r}
+str(testTweets)
+```
+
+## Retweets
+
+The text of the tweet is in the variable `Ttext` in the data frame. Some of these tweets are retweets. You can tell that they are retweets because the begin with an RT. Create a logical vector that is TRUE if the tweet is a retweet. Call the vector `RT`:
+
+```{r error=TRUE}
+RT = grepl("^RT",testTweets$Ttext)
+```
+
+## When the tweet was sent
+
+We are interested in the hour of the day that the tweet was sent. The day, hour, minute, second, and year are 
+provided in `Tdate`.
+
+Use regular expressions to extract the hour of the day that the tweet was sent. Make sure that you save the hour in a numeric vector called `hr`.
+
+```{r, error = TRUE}
+hr = as.numeric(sapply(testTweets$Tdate, function(s) substr(s, 9, 10)))
+```
+
+## Hash Tags
+
+Can you find which tweets contain a hashtag? Hashtags begin with #, and do not include punctuation or blanks. Create a logical vector that is `TRUE` if a tweet contains 1 or more hashtags. Be sure that it doesn't consider a "#" on its own as a hash tag. Call this logical vector `anyHash`
+
+```{r, error=TRUE}
+anyHash = grepl("#[^[:space:]][^[:punct:]]",testTweets$Ttext)
+mytext = c("# ", "#loevlyday", "#,", "#b,", "#b A")
+grepl("#[^[:space:]][^[:punct:]]",mytext)
+```
+
+The `anyHash` logical should be 
+```{r, eval=FALSE}
+anyHash
+[1] FALSE  TRUE  TRUE  TRUE FALSE
+```
+
+
+Use `gregexpr` to find the starting and ending point of the hash tags in the tweets that have a hash tag. Check that you correctly identify the starting point and length of the match. For example, one tweet contains "...  #MAGA. ..." and you do not want to include the period as part of the tag.
+Also, be sure that your call finds all of the hashtags present in the tweet (some tweets have 2 or 3). Save this information in `hashLocs` 
+
+```{r, error=TRUE}
+hashLocs = gregexpr(pattern = "#[A-z]*",
+                    testTweets$Ttext)
+hashLocs
+```
+
+This call to `gregexpr` returns a list. The 1st and 5th elements should be a vector consisting of -1.
+The third element is a numeric vector of length 2 with values 71 and 87 and an attribute called `match.length` of 15 and 8. 
+
+We can use `hashLocs` to extract the hash tags with `substr`. The following code does that for us.
+
+```{r, error=TRUE}
+hashtagList = 
+  mapply(function(x, sta) {
+    substr(rep(x, length(sta)), 
+           start = sta, 
+           stop = sta + attributes(sta)$match.length - 1)
+  },
+         x = testTweets$Ttext,
+         sta = hashLocs)
+names(hashtagList) = NULL
+hashtagList
+```
+
+The `hashtagList` is a list of 5-elements. The first and fifth are empty strings. The second is "#MAGA", and the 3rd and 4th each have 2 hashtags:  "#BigLeagueTruth" and "#Debates" for the 3rd, and "#TrumpTrain" and "#Debates2016" for the 4th.

@@ -1,0 +1,110 @@
+---
+title: "Lists"
+output: html_document
+---
+
+This lab will provide practice on working with lists, including
+
+* subsetting lists 
+* applying functions to elements in a list 
+
+
+In part 1 we will work with the simple `aList` and in part 2 with the list `rain`.
+
+Please use the variable names requested. 
+
+Recall that in general you can subset by position/index (using an integer vector), by name (using a character vector), and by a logical vector (indicating if an element should be included in the subset). Double square brackets allow you to go one level deeper into a list structure and access individual elements of the list. Additionally, named elements of the list can be accessed with a $-sign. Double square brackets and dollar signs work for data frames as well, since data frames are a
+special kind of list.
+
+Begin by running the following code chunk to load the objects.
+
+```{r}
+substitute = TRUE
+load(url("http://www.stat.berkeley.edu/users/nolan/data/anExampleList.rda"))
+load(url("http://www.stat.berkeley.edu/users/nolan/data/rainfallCO.rda"))
+```
+
+Remember to set `substitute` to TRUE, when you are ready to knit the document.
+
+### Working with the List `aList`
+
+Q1. Find how many elements are in the list `aList` and assign this value to the variable `numEl`.
+
+```{r, eval = substitute}
+numEl = length(aList)
+numEl
+```
+
+
+Q2. Use $-notation to access `aVec` and determine its length.  Do this for both the `aVec` in `listToo` and the `aVec` in `aList`.
+
+```{r}
+length(aList$aVec)
+length(aList$listToo$aVec)
+```
+
+
+Q3. Use `sapply()` to determine what kinds of objects are each of the elements in `aList`
+
+```{r, eval = substitute}
+sapply(aList, class )
+sapply(aList, names )
+```
+
+Q4. Use double-square brackets to find the class of each vector in `aDF`. Assign this value to `dfClasses`.
+
+```{r, eval = substitute}
+dfClasses = sapply(aList$aDF, class)
+dfClasses
+```
+
+Q5. One of the elements in `aList` is a function. Call this function and pass it the variable `height` from the data frame that's also in `aList`. Assign the return value from this function call to `xRV`.
+
+```{r, eval = substitute}
+xRV = sapply(aList$aDF$height, aList$aFunc)
+xRV
+```
+
+
+### Working with the Lists `rain` and `day`
+
+When we loaded that Colorado Front Range rda file, we loaded 2 lists, `rain` and `day`. The `rain` list contains the measurements of daily precipitation at each of 5 weather stations in the Front Range. The stations are in operation for different days and so stations measurements consist of vectors of different lengths. The `day` list provides the date on which the rainfall was recorded.
+
+Q6. The lengths of the 5 vectors in `rain` should match the lengths of the 5 vectors in `day`. Write code to confirm this is the case. Your code should return a single logical value (TRUE if the condition is met). Assign this value to `rainCheck`. Note, the `all()` function and ==, and `sapply()` will be helpful here.
+
+```{r, eval = substitute}
+stat1 = rain[[1]]
+stat2 = day[[1]]
+rainCheck = all(sapply(rain, function(stat1) length(stat1)) == sapply(day, function(stat2) length(stat2)))
+rainCheck
+```
+
+Q7. Convert the rainfall measurements in `rain` into millimeters. Put this revised list in `rainMM`. To do this use `sapply()`, and recall that we can call the * function with, 
+
+```{r}
+'*'(2, 3)
+rainMM = sapply(rain, function(stat1) '*'("/"(stat1,100), 25.4))
+```
+
+
+Q8. We are interested in the distribution of rainfall for all of the days and locations (stations) when there was some precipitation. To prepare the data,
+
+* unlist `rainMM` and assign it to `allRecords`
+* subset `allRecords` to extract only those days when there was some rainfall and assign this to `rainyDays`.  This vector should have 7955 values.
+
+```{r, eval = substitute}
+allRecords = unlist(rainMM)
+  
+rainyDays = allRecords[allRecords > 0]
+```
+
+
+Q9. Make a histogram of `rainyDays`. Consider the scale, label the axes, etc.
+
+```{r, eval = substitute}
+require(ggplot2)
+newDf = data.frame(rainyDays)
+
+ggplot(newDf, aes(x = rainyDays)) + geom_histogram() + xlab("amount of rain") + ggtitle("frequency of the amount of rain")
+```
+

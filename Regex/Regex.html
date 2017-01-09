@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1></h1>
+    <h2>Regular Expressions</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Syntax</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><strong>Literal</strong> characters are matched only by the character itself</li>
+<li>A <strong>character class</strong> is matched by any single member of the specified class</li>
+<li><strong>Modifiers</strong> operate on literal characters, character classes, or combinations of the two. </li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Named Character Classes</h2>
+  </hgroup>
+  <article data-timings="">
+    <table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>[:alpha:]</td>
+<td>all alphabetic</td>
+</tr>
+<tr>
+<td>[:digit:]</td>
+<td>digits 0123456789</td>
+</tr>
+<tr>
+<td>[:alnum:]</td>
+<td>all alphabetic and numeric</td>
+</tr>
+<tr>
+<td>[:lower:]</td>
+<td>lower case alphabetic</td>
+</tr>
+<tr>
+<td>[:upper:]</td>
+<td>upper case alphabetic</td>
+</tr>
+<tr>
+<td>[:punct:]</td>
+<td>punctuation characters</td>
+</tr>
+<tr>
+<td>[:blank:]</td>
+<td>blank characters (space or tab)</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h1>Character Classes</h1>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p>Square brackets denote character classes</p></li>
+<li><p><code>[a-z]</code> matches any one lowercase letter</p></li>
+<li><p><code>[a-zA-Z]</code> matches any one letter</p></li>
+<li><p><code>[LATE]</code> matches one of the four letters <code>L</code>, <code>A</code>, <code>T</code>, <code>E</code>.</p></li>
+<li><p><code>[LATE]{4}</code> matches <code>&quot;LATE&quot;</code>, but it also matches <code>&quot;TEAL&quot;</code></p></li>
+</ul>
+
+<pre><code class="r">char_class &lt;- &quot;[LATE]{4}&quot;
+grepl(char_class, &quot;TEALING&quot;)
+</code></pre>
+
+<pre><code>## [1] TRUE
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Character classes</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>All metacharacters mentioned lose their special meanings inside of character classes</li>
+<li>The only exception is <code>^</code>, which when placed at the beginning means &quot;everything but the characters in this class&quot;</li>
+</ul>
+
+<pre><code class="r"># Everything but the letters E, A, and T
+neg_class &lt;- &quot;[^EAT]{3}&quot;
+
+# BAT contains A and T
+grepl(neg_class, &quot;BAT&quot;)
+</code></pre>
+
+<pre><code>## [1] FALSE
+</code></pre>
+
+<pre><code class="r"># Bat does not contain any of the specified characters 
+grepl(neg_class, &quot;Bat&quot;)
+</code></pre>
+
+<pre><code>## [1] TRUE
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Qualifiers</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The following special symbols, called <strong>metacharacters</strong> have special meanings in regular expressions.</p>
+
+<table><thead>
+<tr>
+<th>Qualifier</th>
+<th>&gt;=</th>
+<th>&lt;=</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>?</td>
+<td>0</td>
+<td>1</td>
+<td>at most 1</td>
+</tr>
+<tr>
+<td>+</td>
+<td>1</td>
+<td>Inf</td>
+<td>at least 1</td>
+</tr>
+<tr>
+<td>*</td>
+<td>0</td>
+<td>Inf</td>
+<td>any number of</td>
+</tr>
+<tr>
+<td>{m,n}</td>
+<td>m</td>
+<td>n</td>
+<td>between m and n</td>
+</tr>
+<tr>
+<td>{,n}</td>
+<td>0</td>
+<td>n</td>
+<td>at most n</td>
+</tr>
+<tr>
+<td>{m,}</td>
+<td>m</td>
+<td>Inf</td>
+<td>at least m</td>
+</tr>
+<tr>
+<td>{n}</td>
+<td>n</td>
+<td>n</td>
+<td>exactly n</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Other metacharacters</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>These symbols also represent something other than their <em>literal</em> meaning:</p>
+
+<table><thead>
+<tr>
+<th>Metacharacter</th>
+<th>Meaning</th>
+<th>Example Usage</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>()</td>
+<td>group</td>
+<td>&quot;(ham){3}&quot;</td>
+<td>matches &quot;hamhamham&quot;</td>
+</tr>
+<tr>
+<td>.</td>
+<td>anything</td>
+<td>&quot;.{3}&quot;</td>
+<td>matches any 3 characters (e.g &quot;ham&quot;, &quot;h@m&quot;, &quot;h49&quot;)</td>
+</tr>
+<tr>
+<td>^</td>
+<td>beginning</td>
+<td>&quot;^ham&quot;</td>
+<td>only matches &quot;ham&quot; if it appears at the beginning of the string</td>
+</tr>
+<tr>
+<td>^ (inside [])</td>
+<td>not</td>
+<td>&quot;[^[0-9]]{3}&quot;</td>
+<td>matches any 3 characters that are not numbers (i.e. &quot;ham&quot; but not &quot;h4m&quot;)</td>
+</tr>
+<tr>
+<td>$</td>
+<td>end</td>
+<td>&quot;ham$&quot;</td>
+<td>only matches &quot;ham&quot; if it appears at the end of the string</td>
+</tr>
+</tbody></table>
+
+<ul>
+<li>Note: a ^ as the first character in a pattern signifies &quot;the beginning of the string&quot;, but a ^ as the first character in a character class [] signifies &quot;not&quot;</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Escaping Special Meanings</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>R uses the double-slash <code>\\</code> to <strong>escape</strong> special meanings</li>
+<li><p>Examples</p>
+
+<ul>
+<li>&quot;a.b&quot; matches the letter a, then any character, then the letter b</li>
+<li>&quot;a\\.b&quot; matches the literal string &quot;a.b&quot;</li>
+<li>&quot;a[.]b&quot; also works since all metacharacters, with the except of of ^, lose their special meanings inside of []</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h1>Functions</h1>
+  </hgroup>
+  <article data-timings="">
+    <table><thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>sub</td>
+<td>replaces first matched pattern</td>
+</tr>
+<tr>
+<td>gsub</td>
+<td>replaces all matched patterns</td>
+</tr>
+<tr>
+<td>grep</td>
+<td>returns indices of elements for which there was a match</td>
+</tr>
+<tr>
+<td>grepl</td>
+<td>returns logical vector with <code>TRUE</code> denoting that the element contained a match</td>
+</tr>
+<tr>
+<td>regexpr</td>
+<td>returns index of first match</td>
+</tr>
+<tr>
+<td>gregexpr</td>
+<td>returns indices of all matches</td>
+</tr>
+<tr>
+<td>substr</td>
+<td>splits string at matched pattern</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Syntax'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Named Character Classes'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Character Classes'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Character classes'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Qualifiers'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Other metacharacters'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Escaping Special Meanings'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Functions'>
+         8
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

@@ -1,0 +1,103 @@
+---
+title: "Lab 5"
+output: html_document
+---
+
+
+## Introduction
+
+In class, we wrote the following function to simulate St. Petersberg's Paradox. 
+
+```{r}
+double.num = function(numBets) {
+   
+  if (!is.numeric(numBets)) stop("numBets must be numeric")
+  outcomes = c(-1, 1)
+  
+  for (i in 1:numBets) {
+    winLoss = sample(outcomes, size = 1)
+    if (winLoss > 0) return(i)
+  }
+  return(NA)
+}
+```
+
+
+Q1. Add a check to this function for `numBets`. Our function expects that `numBets` is a single number. If it contains more numbers, then the function should use only the first and it should issue a warning to that effect. Call this revised function `double.revised`. Test that it works as expected.
+
+```{r}
+double.revised = function(numBets) {
+  
+  if (!is.numeric(numBets)) stop("numBets must be numeric")
+  if (length(numBets) >1) {
+    warning("numBets should contains only one number")
+    numBets = numBets[1]
+  }
+  outcomes = c(-1, 1)
+  
+  for (i in 1:numBets) {
+    winLoss = sample(outcomes, size = 1)
+    if (winLoss > 0) return(i)
+  }
+  return(NA)
+}
+```
+
+Put your tests here 
+```{r, collapse = TRUE, error=TRUE}
+double.revised(c(1,2,3))
+double.revised(c(100, 10, 1))
+```
+
+
+Q2. Write a new function that takes a dollar amount rather than the number of bets as input. This should be a required parameter called `wallet`.  Your code needs to determine the maximum number of bets that can be placed given the value provided for `wallet`.  (Remember that the number of bets should be an integer). To help you, recall that 1 + 2 is 4-1 and 1 + 2 + 4 is 8 - 1  and 1 + 2 + 4 + 8 is 16 - 1.  Do you see a pattern?
+
+This function should return the gain. Note that the gain is one of two possible values: 1 or the total amount lost. Call this function `double.gain`.
+
+
+```{r}
+double.gain = function(wallet) {
+  numBets = floor(sqrt(wallet+1))
+  return(double.revised(numBets))
+}
+```
+
+Be sure to test this function.
+
+```{r, collapse = TRUE, error=TRUE}
+# Put some tests here 
+double.gain(3)
+double.gain(22)
+```
+
+
+
+Q3. Write a new function that can accept either the number of bets to place or the amount in the wallet or both.  The number of bets, `numBets`, is required. The wallet, called `wallet`, has a default value which you are to set to the largest amount of money needed if all `numBets` are placed.  This function returns gain. Note that your code should check that `numBets` and `wallet` are compatible, i.e., that there is enough money in the wallet for the number of bets requested. If not, then lower the number of bets to a value that matches the size of the wallet and issue a warning that explains the problem and provides the revised number of bets. (To do this you can `paste` text together with objects, e.g., 
+
+```{r}
+x = 2
+paste("The value of x is ", x, "Were you surprised?")
+```
+
+
+Write your function in the code chunk below
+
+
+```{r, error = TRUE}
+double.both = function(numBets, wallet = 2^numBets-1) {
+  if (floor(sqrt(wallet+1)) < numBets){
+    warning (paste("The amount of money you have is ", wallet, "Were you surprised?"))
+    numBets = floor(sqrt(wallet+1))
+  }
+  return(double.revised(numBets))
+}
+```
+
+Test your function
+```{r, collapse = TRUE, error=TRUE}
+double.both(4)
+double.both(4, 1)
+double.both(1, 4)
+double.both(10, 100000)
+```
+

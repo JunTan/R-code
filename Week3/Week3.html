@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1></h1>
+    <h2>Lists, matrices, arrays, and the apply functions</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>This week...</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Lists</li>
+<li>Matrices</li>
+<li>Arrays</li>
+<li><code>lapply()</code>, <code>sapply()</code>, and <code>apply()</code></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Lists</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Lists, unlike vectors, can contain more than one data type. We create lists using the <code>list()</code> command.</p>
+
+<pre><code class="r">list(&quot;a&quot;, 1, FALSE, 5 + 3i)
+</code></pre>
+
+<pre><code>## [[1]]
+## [1] &quot;a&quot;
+## 
+## [[2]]
+## [1] 1
+## 
+## [[3]]
+## [1] FALSE
+## 
+## [[4]]
+## [1] 5+3i
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h1>More list examples</h1>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r"># List with lists
+list(&quot;fruits&quot;, c(&quot;apples&quot;, &quot;bananas&quot;, &quot;cranberries&quot;), list(&quot;other things&quot;))
+</code></pre>
+
+<pre><code>## [[1]]
+## [1] &quot;fruits&quot;
+## 
+## [[2]]
+## [1] &quot;apples&quot;      &quot;bananas&quot;     &quot;cranberries&quot;
+## 
+## [[3]]
+## [[3]][[1]]
+## [1] &quot;other things&quot;
+</code></pre>
+
+<pre><code class="r"># Named list
+list(fruits = c(&quot;apples&quot;, &quot;bananas&quot;, &quot;cranberries&quot;))
+</code></pre>
+
+<pre><code>## $fruits
+## [1] &quot;apples&quot;      &quot;bananas&quot;     &quot;cranberries&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h1>Consider the following list:</h1>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">mylist &lt;- list(&#39;first&#39; = data.frame(col1 = letters[1:2], col2 = letters[3:4]), 
+          &#39;second&#39; = c(&quot;e&quot;, &quot;f&quot;, &quot;g&quot;), 
+          &#39;third&#39; = list(object1 = &quot;h&quot;, object2 = &quot;i&quot;))
+mylist
+</code></pre>
+
+<pre><code>## $first
+##   col1 col2
+## 1    a    c
+## 2    b    d
+## 
+## $second
+## [1] &quot;e&quot; &quot;f&quot; &quot;g&quot;
+## 
+## $third
+## $third$object1
+## [1] &quot;h&quot;
+## 
+## $third$object2
+## [1] &quot;i&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Single v. Double Brackets</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">mylist[1]
+</code></pre>
+
+<pre><code>## $first
+##   col1 col2
+## 1    a    c
+## 2    b    d
+</code></pre>
+
+<pre><code class="r">class(mylist[1])
+</code></pre>
+
+<pre><code>## [1] &quot;list&quot;
+</code></pre>
+
+<p>Subsetting a list using single brackets will always return another list. We can consider this a sub-list of our original list containing only the elements we specified.</p>
+
+<p>In this case, our sub-list contains only one element: a data frame.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Single v. Double Brackets</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">mylist[[1]]
+</code></pre>
+
+<pre><code>##   col1 col2
+## 1    a    c
+## 2    b    d
+</code></pre>
+
+<pre><code class="r">class(mylist[[1]])
+</code></pre>
+
+<pre><code>## [1] &quot;data.frame&quot;
+</code></pre>
+
+<p>Whereas subsetting with single brackets returns a list of specified elements, subsetting with double brackets will return any specified element.</p>
+
+<p>In this case, subsetting with double brackets returns the data frame, rather than a list containing the data frame.</p>
+
+<p>Note: Double brackets allow only a single element to be selected by position or name, whereas single brackets allow indexing by vectors.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Accessing items in a list</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>There are two main methods of extracting elements from a list:</p>
+
+<ul>
+<li>By position, with <code>[[]]</code></li>
+<li>By name (if it&#39;s named) with <code>$</code> or <code>[[]]</code></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h1>How can we extract the vector from the second element (named &#39;second&#39;) of <code>mylist</code>?</h1>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">mylist[[2]] #by position
+</code></pre>
+
+<pre><code>## [1] &quot;e&quot; &quot;f&quot; &quot;g&quot;
+</code></pre>
+
+<pre><code class="r">mylist$second #by name (using $)
+</code></pre>
+
+<pre><code>## [1] &quot;e&quot; &quot;f&quot; &quot;g&quot;
+</code></pre>
+
+<pre><code class="r">mylist[[&quot;second&quot;]] #by name (using [[ ]])
+</code></pre>
+
+<pre><code>## [1] &quot;e&quot; &quot;f&quot; &quot;g&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>Accessing Nested Items</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>A unique feature of lists is that lists are recursive objects. That is, you can have a list stored as an element inside of another list. </p>
+
+<p>How can we access &#39;object2&#39; from the third element of <code>mylist</code>?</p>
+
+<pre><code class="r">mylist$third[[2]] #by position
+</code></pre>
+
+<pre><code>## [1] &quot;i&quot;
+</code></pre>
+
+<pre><code class="r">mylist$third$object2 #by name (using $)
+</code></pre>
+
+<pre><code>## [1] &quot;i&quot;
+</code></pre>
+
+<pre><code class="r">mylist$third[[&quot;object2&quot;]] #by name (using [[ ]])
+</code></pre>
+
+<pre><code>## [1] &quot;i&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Accessing and Assigning Names in a list</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Similar to vectors, the <code>names</code> function can be used to get and change the names in a list</p>
+
+<pre><code class="r">x &lt;- list(&#39;first&#39; = &quot;a&quot;, &#39;second&#39; = &quot;b&quot;, &#39;third&#39; = &quot;c&quot;)
+names(x)
+</code></pre>
+
+<pre><code>## [1] &quot;first&quot;  &quot;second&quot; &quot;third&quot;
+</code></pre>
+
+<pre><code class="r">names(x) &lt;- c(&quot;apples&quot;, &quot;bananas&quot;, &quot;cherries&quot;)
+x
+</code></pre>
+
+<pre><code>## $apples
+## [1] &quot;a&quot;
+## 
+## $bananas
+## [1] &quot;b&quot;
+## 
+## $cherries
+## [1] &quot;c&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Matrices</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Matrices and arrays are n-dimensional generalizations of vectors. Like vectors, matrices can only hold one data type.</p>
+
+<p>We can create a matrix by using the command <code>matrix()</code> and specifying a vector of numbers (or characters), the number of rows (and/or columns), and whether to fill the matrix by row or column. </p>
+
+<pre><code class="r">m &lt;- matrix(1:6, nrow = 2, byrow = FALSE)
+m
+</code></pre>
+
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    1    3    5
+## [2,]    2    4    6
+</code></pre>
+
+<p>Matrices behave a lot like data frames in terms of naming and subsetting.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>Accessing and assigning names of a matrix</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Similar to data frames, we can use the <code>rownames()</code> and <code>colnames()</code> function to access and assign names to the rows and columns of our matrix.</p>
+
+<pre><code class="r">m
+</code></pre>
+
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    1    3    5
+## [2,]    2    4    6
+</code></pre>
+
+<pre><code class="r">rownames(m) &lt;- c(&quot;r1&quot;, &quot;r2&quot;)
+colnames(m) &lt;- c(&quot;c2&quot;, &quot;c2&quot;, &quot;c3&quot;)
+m
+</code></pre>
+
+<pre><code>##    c2 c2 c3
+## r1  1  3  5
+## r2  2  4  6
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <hgroup>
+    <h2>Subsetting a Matrix</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Again, similar to data frames, we can subset a matrix using the four methods of subsetting we learned for data frames</p>
+
+<ul>
+<li>Logical </li>
+<li>Position</li>
+<li>Exclusion </li>
+<li>Inclusion </li>
+</ul>
+
+<p>Suppose we wanted to extract the element \(5\) out of our matrix <code>m</code></p>
+
+<pre><code class="r">m
+</code></pre>
+
+<pre><code>##    c2 c2 c3
+## r1  1  3  5
+## r2  2  4  6
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <hgroup>
+    <h2>Subsetting a Matrix</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">m[1, 3] #Subsetting by Position
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+<pre><code class="r">m[&quot;r1&quot;, &quot;c3&quot;] #Subsetting by Name
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+<pre><code class="r">m[-2, -c(1,2)] #Subsetting by Exclusion
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+<pre><code class="r">m[c(TRUE, FALSE), c(FALSE, FALSE, TRUE)] #Subsetting by Logicals
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>Arrays</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We can create an array by using the <code>array()</code> function and specifying a vector of numbers (or characters), the dimensions of the array (rows, numbers, and pages), and (optional) the names for the dimensions.</p>
+
+<p>The third dimension of an array, typically called a page, acts like a matrix and can be treated as such.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-16" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">a &lt;- array(1:24, 
+           dim = c(4, 3, 2),
+           dimnames = list(c(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;, &quot;four&quot;), 
+                           c(&quot;ein&quot;, &quot;zwei&quot;, &quot;drei&quot;),
+                           c(&quot;un&quot;, &quot;deux&quot;)))
+a
+</code></pre>
+
+<pre><code>## , , un
+## 
+##       ein zwei drei
+## one     1    5    9
+## two     2    6   10
+## three   3    7   11
+## four    4    8   12
+## 
+## , , deux
+## 
+##       ein zwei drei
+## one    13   17   21
+## two    14   18   22
+## three  15   19   23
+## four   16   20   24
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  <hgroup>
+    <h2>Subsetting an Array</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we wanted to extract the element \(21\) out of our array <code>a</code></p>
+
+<pre><code class="r">a[1, 3, 2] #Subsetting by Position
+</code></pre>
+
+<pre><code>## [1] 21
+</code></pre>
+
+<pre><code class="r">a[&quot;one&quot;, &quot;drei&quot;, &quot;deux&quot;] #Subsetting by Name
+</code></pre>
+
+<pre><code>## [1] 21
+</code></pre>
+
+<pre><code class="r">a[-c(2, 3, 4), -c(1,2), -1] #Subsetting by Exclusion
+</code></pre>
+
+<pre><code>## [1] 21
+</code></pre>
+
+<pre><code class="r">a[c(T, F, F, F), c(F, F, T), c(F, T)] #Subsetting by Logicals
+</code></pre>
+
+<pre><code>## [1] 21
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-18" style="background:;">
+  <hgroup>
+    <h2>Apply functions and when to use them</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>When do you use the <code>apply()</code> family?  Almost anytime you would want to loop in R!  If your work involves iteratively creating a list, vector, dataframe, etc, then you should be using a <code>lapply</code> type of a function.  Some EXCEPTIONS:</p>
+
+<ol>
+<li>Don&#39;t use <code>lapply</code> when the loop is recursive.  i.e. New elements depend on previous ones</li>
+<li>You don&#39;t actually want output (e.g. you only want print statements)</li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-19" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Imagine you&#39;ve loaded a data file, like the one below, that uses \(-99\) to represent missing values. You want to replace all the $-99$s with <code>NA</code>s.</p>
+
+<pre><code>##    a  b c   d   e f
+## 1  1  6 1   5 -99 1
+## 2 10  4 4 -99   9 3
+## 3  7  9 5   4   1 4
+## 4  2  9 3   8   6 8
+## 5  1 10 5   9   8 6
+## 6  6  2 1   3   8 5
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-20" style="background:;">
+  <hgroup>
+    <h2>First Response</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We can solve this problem using repeated subsetting and assignment</p>
+
+<pre><code class="r">df$a[df$a == -99] &lt;- NA
+df$b[df$b == -99] &lt;- NA
+df$c[df$c == -99] &lt;- NA
+df$d[df$d == -99] &lt;- NA
+df$e[df$e == -99] &lt;- NA
+df$f[df$f == -99] &lt;- NA
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-21" style="background:;">
+  <hgroup>
+    <h2>Functions</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We could write a function, removing the chance of messing up the -99:</p>
+
+<pre><code class="r">fix_missing &lt;- function(x) {
+  x[x == -99] &lt;- NA
+  x
+}
+
+fix_missing(df$a)
+</code></pre>
+
+<pre><code>## [1]  1 10  7  2  1  6
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-22" style="background:;">
+  <hgroup>
+    <h2>Repeated Function Calls</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>This doesn&#39;t solve having to call the function on every column though:</p>
+
+<pre><code class="r">df$a &lt;- fix_missing(df$a)
+df$b &lt;- fix_missing(df$b)
+df$c &lt;- fix_missing(df$c)
+df$d &lt;- fix_missing(df$d)
+df$e &lt;- fix_missing(df$e)
+df$f &lt;- fix_missing(df$f)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-23" style="background:;">
+  <hgroup>
+    <h2><code>lapply()</code> solution</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">df &lt;- lapply(df, fix_missing)
+df
+</code></pre>
+
+<pre><code>## $a
+## [1]  1 10  7  2  1  6
+## 
+## $b
+## [1]  6  4  9  9 10  2
+## 
+## $c
+## [1] 1 4 5 3 5 1
+## 
+## $d
+## [1]  5 NA  4  8  9  3
+## 
+## $e
+## [1] NA  9  1  6  8  8
+## 
+## $f
+## [1] 1 3 4 8 6 5
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-24" style="background:;">
+  <hgroup>
+    <h2>Lapply</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The most basic form of the apply family of functions is <code>lapply()</code>.  It takes a list and returns a list.  If you give it any other object, it will run <code>as.list</code> on it first.</p>
+
+<pre><code>lapply(X = list_like_object, FUN, ...)
+</code></pre>
+
+<p>The <code>...</code> allows you to pass arguments to the function <code>FUN</code>.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-25" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we want to know how many players are in each team in this list</p>
+
+<pre><code class="r">players &lt;- list(
+warriors = c(&#39;curry&#39;, &#39;iguodala&#39;, &#39;thompson&#39;, &#39;green&#39;),
+cavaliers = c(&#39;james&#39;, &#39;shumpert&#39;, &#39;thompson&#39;),
+rockets = c(&#39;harden&#39;, &#39;howard&#39;)
+)
+
+lapply(players, length)
+</code></pre>
+
+<pre><code>## $warriors
+## [1] 4
+## 
+## $cavaliers
+## [1] 3
+## 
+## $rockets
+## [1] 2
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-26" style="background:;">
+  <hgroup>
+    <h2>Sapply</h2>
+  </hgroup>
+  <article data-timings="">
+    <p><code>sapply</code> is very similar to <code>lapply</code>.  The only difference is that instead of returning a list, <code>sapply</code> attempts to simplify the output down to a vector, matrix, or array if possible.</p>
+
+<pre><code class="r">df &lt;- data.frame(a = 1:3, b = 4:6)
+lapply(df, median)
+</code></pre>
+
+<pre><code>## $a
+## [1] 2
+## 
+## $b
+## [1] 5
+</code></pre>
+
+<pre><code class="r">sapply(df, median)
+</code></pre>
+
+<pre><code>## a b 
+## 2 5
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-27" style="background:;">
+  <hgroup>
+    <h2>Apply</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The <code>apply</code> function can be used with matrices, arrays, and data frames and works in almost the same way as the <code>lapply</code> function, except it allows us to specify the dimension over which we want to apply our function.</p>
+
+<pre><code>apply(X = n_dim_object, MARGIN, FUN, ...)
+</code></pre>
+
+<p>Based on the standard ordering of dimensions, use:</p>
+
+<ul>
+<li>1: row</li>
+<li>2: column</li>
+<li>3: pages</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-28" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we have the following data frame, and we want to find the mean value of each row, ignoring the NA values. </p>
+
+<pre><code class="r">df &lt;- data.frame(a = 1:3, b = 4:6, c = c(7, NA, 9))
+df
+</code></pre>
+
+<pre><code>##   a b  c
+## 1 1 4  7
+## 2 2 5 NA
+## 3 3 6  9
+</code></pre>
+
+<p>Recall: we can pass arguments into the function using the <code>...</code>.  </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-29" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">apply(df, 1, mean, na.rm = TRUE)
+</code></pre>
+
+<pre><code>## [1] 4.0 3.5 6.0
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-30" style="background:;">
+  <hgroup>
+    <h2>Anonymous functions</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The <code>FUN</code> in the <code>lapply</code> function call doesn&#39;t have to be a base <code>R</code> function.  It can be one that we&#39;ve written up ourselves or even a nameless (anonymous) one that you write inside the <code>lapply</code> call itself. Reserve anonymous functions for short expressions.  If it takes over a line of code, define the function outside <code>lapply</code> for readability.</p>
+
+<pre><code class="r"># Note that the function doesn&#39;t take on a name
+lapply(1:3, function(x) x^2)
+</code></pre>
+
+<pre><code>## [[1]]
+## [1] 1
+## 
+## [[2]]
+## [1] 4
+## 
+## [[3]]
+## [1] 9
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-31" style="background:;">
+  <hgroup>
+    <h2>Subsetting with lapply</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Recall our variable <code>mylist</code>. Suppose we only wanted to subset out only the second element of each element inside of <code>mylist</code></p>
+
+<pre><code class="r">mylist
+</code></pre>
+
+<pre><code>## $first
+##   col1 col2
+## 1    a    c
+## 2    b    d
+## 
+## $second
+## [1] &quot;e&quot; &quot;f&quot; &quot;g&quot;
+## 
+## $third
+## $third$object1
+## [1] &quot;h&quot;
+## 
+## $third$object2
+## [1] &quot;i&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-32" style="background:;">
+  <article data-timings="">
+    <p>We can write an anonymous function inside of out <code>lapply</code> call that will subset out only the second elements</p>
+
+<pre><code class="r">lapply(mylist, function(x) x[2])
+</code></pre>
+
+<pre><code>## $first
+##   col2
+## 1    c
+## 2    d
+## 
+## $second
+## [1] &quot;f&quot;
+## 
+## $third
+## $third$object2
+## [1] &quot;i&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='This week...'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Lists'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='More list examples'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Consider the following list:'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Single v. Double Brackets'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Single v. Double Brackets'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Accessing items in a list'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='How can we extract the vector from the second element (named &#39;second&#39;) of <code>mylist</code>?'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Accessing Nested Items'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='Accessing and Assigning Names in a list'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Matrices'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Accessing and assigning names of a matrix'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='Subsetting a Matrix'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='Subsetting a Matrix'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='Arrays'>
+         15
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=16 title='NA'>
+         16
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='Subsetting an Array'>
+         17
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=18 title='Apply functions and when to use them'>
+         18
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=19 title='Example'>
+         19
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=20 title='First Response'>
+         20
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=21 title='Functions'>
+         21
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=22 title='Repeated Function Calls'>
+         22
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=23 title='<code>lapply()</code> solution'>
+         23
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=24 title='Lapply'>
+         24
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=25 title='Example'>
+         25
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=26 title='Sapply'>
+         26
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=27 title='Apply'>
+         27
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=28 title='Example'>
+         28
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=29 title='Example'>
+         29
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=30 title='Anonymous functions'>
+         30
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=31 title='Subsetting with lapply'>
+         31
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=32 title='NA'>
+         32
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

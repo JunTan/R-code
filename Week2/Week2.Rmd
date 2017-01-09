@@ -1,0 +1,209 @@
+---
+title       : 
+subtitle    : ggplot Basics
+author      : 
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+```{r, include = FALSE}
+library(ggplot2)
+library(readr)
+```
+
+
+## Components of a plot
+
+* plot object
+* aesthetic mapping: connects variables to plotting features such as the x axis, y axis, color, line type, etc.
+* layers: consist of a geometry (visual representation) and a statistic (operation on variable)
+* scales: allow us to control how an aesthetic is represented in the plot (e.g. specify axis labels (name), axis limits, transformations, colors, line types, etc.)
+* themes: allows us to control non-data aspects of the graphic such as font size, location of legend, background colors, etc.
+
+---
+
+## Starting a plot
+
+* `ggplot()` initializes the plot object. It can be used to declare the dataset (must be in the form of a data frame), as well as to specify the set of aesthetics to use for the plot.
+* Note: The dataset and aesthetics you specify in `ggplot()` must be common throughout all layers of your plot.
+
+---
+
+## Example
+
+In HW2, we want to compare the distributions of casual and registered bike riders. We will do this today by superposing two density plots (Don't do this in your homework)
+
+We start by examining the dataset: 
+
+```{r, echo = FALSE}
+bike = read_delim("~/Downloads/bikeshare.txt", delim = ",")  
+bike$newDate <- as.POSIXct(bike$dteday) + ((bike$hr+8)*60*60) 
+bike$workingday <- factor(bike$workingday,
+                          levels = c(0,1),
+                          labels = c("no", "yes"))
+head(bike)
+```
+
+---
+
+We initialize our graph using the `ggplot()` function.
+
+```{r}
+ggplot(data = bike)
+```
+
+---
+
+## Geometries 
+Geometries are the shapes and lines representing data in a plot. 
+
+Default Geometries for Statistics:
+
+Graph type   | call               | statistic | default geom
+------------ | ------------------ | --------- | --------------
+histogram    | geom_histogram     | bin       | bar
+smoother     | geom_smooth        | smooth    | line
+boxplot      | geom_boxplot       | boxplot   | boxplox
+density      | geom_density       | density   | line
+freqpoly     | geom_freqpoly      | bin       | line
+
+---
+
+## Aesthetics
+
+Aesthetics are physical qualities of the geometries in the graph.  The most common aesthetics are:
+
+Aesthetic      | Description
+-------------- | -------------------------------------------------------------
+x              | position along the x-axis
+y              | position along the y-axis
+color          | color of 1D component (point, line)
+fill           | color of 2D component ("insides")
+alpha          | opacity (opposite of transparency); takes on values from 0-1
+shape          | shape used for points
+size           | size of points
+
+---
+
+## What geometry is in this plot and what are its aesthetics?
+
+```{r, echo = FALSE}
+ggplot(mtcars, aes(hp, mpg, color = factor(cyl))) +
+  geom_point(size = 3)
+```
+
+---
+
+## Example
+
+Recall: We want to compare the densities of casual and registered bikers by superposing two density plots. Let's start by first creating a density plot of casual bikers.
+
+```{r, fig.width = 8, fig.height = 4}
+ggplot(data = bike) +
+  geom_density(mapping = aes(x = casual))
+```
+
+Why did we have to specify the `x` aesthetic in the `geom_density()` function and not in the main `ggplot()` function?
+
+---
+
+## Multiple layers
+
+We can add on multiple layers with `+`.  If we don't specify aesthetics, then the layer inherits those values in order from the main ggplot call.
+
+
+```{r, fig.width = 8, fig.height = 4}
+ggplot(data = bike) +
+  geom_density(mapping = aes(x = casual)) +
+  geom_density(mapping = aes(x = registered))
+```
+
+---
+
+## Fixed Aesthetics 
+
+We usually think of aesthetics as being mapped from variables.  However, when customizing our graphics, it's often desirable to specify fixed aesthetics.  Below, `x` and `y` are being mapped from variables whereas `color` is treated as a __fixed aesthetic__.  Therefore, we specify it outside the `aes` call.
+
+
+```{r, fig.width = 8, fig.height = 4}
+ggplot(data = bike) +
+  geom_density(mapping = aes(x = casual), color = "red") +
+  geom_density(mapping = aes(x = registered), color = "blue")
+```
+
+What's wrong with this plot?
+
+---
+
+Note: By specifying `color` inside of our `aes()` call, R will automatically assign our geometry a default color. We can specify how we want the label for that color to appear in the legend using `color`
+
+
+```{r, fig.width = 10, fig.height = 5}
+ggplot(data = bike) +
+  geom_density(mapping = aes(x = casual, color = "Casual")) +
+  geom_density(mapping = aes(x = registered, color = "Registered"))
+```
+
+---
+
+We can now change the fill, color, and alpha aesthetics to make our graph look nicer.
+
+
+```{r, fig.width = 10, fig.height = 5}
+plot <- ggplot(bike) + 
+  geom_density(mapping = aes(x = casual, fill = "Casual"),
+               alpha = 0.5, color = NA) +
+  geom_density(mapping = aes(x = registered, fill = "Registered"),
+               alpha = 0.5, color = NA) 
+plot
+```
+
+---
+
+## Scaling
+
+Suppose we wanted our x-axis to range from 0-1000 but we wanted tick marks at intervals of 100 instead of 250. We can use `scale_x_coninuous()` to fix this.
+
+```{r, fig.width = 10, fig.height = 5}
+plot2 <- plot + scale_x_continuous(breaks = seq(0, 1000, by = 100))
+plot2
+```
+
+---
+
+Finally, let's add some labels to our graph.
+
+
+```{r, fig.width = 10, fig.height = 5}
+finalplot <- plot2 + labs(x = "Number of Riders",
+                          y = "Density", 
+                          title = "Distribution of Casual v. Registered Bikers",
+                          fill = "Type of Rider") 
+finalplot
+```
+
+---
+
+## Faceting
+
+Facets refer to different sides of an object.  When graphing, facetting refers to splitting your data up into subsets and then making multiple graphs from those data.  There are two faceting calls:
+
+* `facet_wrap(~x)` facets the `x` variable, wrapping the panels to make sure they all fit in the frame
+* `facet_grid(x~y)` facets the `x` and `y` variable, gridding them so that the `x` values form the rows and `y` values form the columns
+* Facetting only works with categorical (factor) variables
+
+---
+
+## facet_wrap
+
+Suppose we wanted to facet the `workingday` variable.
+
+
+```{r, fig.width = 12, fig.height = 6}
+finalplot + facet_wrap( ~workingday)
+```

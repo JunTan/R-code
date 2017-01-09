@@ -1,0 +1,337 @@
+---
+title: "Roulette"
+output: html_document
+---
+
+
+## Introduction
+
+In this home work you will write two functions that simulate various bets in roulette. Review the slides from class to see the possible bets and their pay offs. 
+
+The home work aims to give you practice in the following aspects of function writing: 
+
+* Identify the parameters to a function and write a signature for the function
+* Use if/else statements to control the flow of code evaluation
+* Compare the efficiency of vectorized computations to for loops
+
+Additionally, you will compare various betting strategies.
+
+## A First Function
+
+In class, we wrote a function to simulate betting red in roulette. We reproduce this function here for your convenience.
+
+```{r betRed}
+betRed = function(numBets, betAmt = 1) {
+  winLoss = sample(rep(c(-1, 1), c(20, 18)),
+                   size = numBets, replace = TRUE)
+  netGain = sum(winLoss * betAmt)
+  return(netGain)
+}
+```
+
+We compares the net gain of two types of betting strategies: 100 bets of $1 on red and 1 bet of $100 on red. To do this we repeated the betting process 10,000 times to see the kinds of net gains we might get with each strategy.
+
+```{r}
+gain100B.1D = 
+  replicate(10000, betRed(numBets = 100, betAmt = 1))
+
+gain1B.100D =
+  replicate(10000, betRed(numBets = 1, betAmt = 100))
+```
+
+We examine the distribution of the 10,000 outcomes from these betting strategies with a plot. We wrote a function to make this plot as we plan to make several plots and figure it's easier to keep them all consistent with this function, `plotGains`
+
+```{r,include=FALSE}
+plotGains = 
+  function(gain1, gain2 = NULL, bw = 2,
+           title = 'Compare Betting Strategies') 
+{
+    gains = data.frame(
+      gain = c(gain1, gain2), 
+      strat = rep(c(1,2), 
+                  times = c(length(gain1), length(gain2)))
+      )
+    require(ggplot2)
+    ggplot(data = gains) + 
+      geom_density(aes(x = gain, y = ..density.., 
+                       color = factor(strat)), 
+                   bw = bw) +
+      scale_x_continuous("Gains in Roulette") +
+      scale_color_discrete(guide = FALSE) + 
+      ggtitle(title)
+}
+```
+
+
+We use this plotting function to compare the net gains from the 2 strategies:
+
+```{r}
+plotGains(gain1B.100D, gain100B.1D, bw = 1,
+          title = "Compare Strategies for Betting Red\n1 Bet of 100 Dollars vs 100 Bets of 1 Dollar ")
+```
+
+
+## A Wallet
+
+When we play roulette we start with a particular sum of money, e.g., we may have $100 in our wallet. Then what's in our wallet impacts how much and how long we can bet.  For example, with $100 in our wallet we cannot place a $200 bet. Also, depending on our winnings, we may be able to place 200 $1 bets or we may run out of money before then. 
+
+For your first function, augment the `betRed` function to accept an additional parameter called `wallet` that contains the starting amount of money. Call this new function `betRed2`. Give `wallet` a default value so that it runs like the original `betRed` function if the default value of `wallet is used`.
+
+The return value from this function should be the net gain.  As before, this is the winnings less the losses. However, if at some point in your betting, you no longer have enough funds to place a bet then you can't continue your betting.  
+
+NOTE: DO NOT USE A FOR LOOP IN THIS FUNCTION. Consider instead the `cumsum()` function and logical expressions.
+
+```{r betRed2}
+betRed2 = function(numBets, betAmt = 1, wallet = betAmt) {
+  if (wallet < betAmt)
+    return(0)
+  
+  winLoss = sample(rep(c(-1, 1), c(20, 18)),
+                   size = numBets, replace = TRUE)
+  
+  winLossFilter1 =cumsum(winLoss * betAmt)
+  
+  winLossFilter2 = wallet+winLossFilter1 >= 0
+  
+  netGain = sum(winLoss[winLossFilter2] * betAmt)
+  return(netGain)
+}
+```
+
+
+Here are some tests that you can run to see if your code is working correctly:
+
+```{r, error=TRUE}
+betRed2(betAmt = 100, numBets = 1, wallet = 50)
+# returns 0
+
+betRed2(betAmt = 100, numBets = 1, wallet = 100)
+# returns either -100 or 100
+
+test1 = replicate(10000, 
+          betRed2(betAmt = 1, numBets = 100,
+                  wallet = Inf))
+mean(test1)
+# should be near -5.26
+
+test2 = replicate(10000, 
+          betRed2(betAmt = 100, numBets = 100,
+                  wallet = 500))
+
+plotGains(test2)
+# Should have a large spike at -500 and several tiny spikes at 100 dollar intervals
+
+```
+
+### Comparing strategies
+
+Try several betting strategies and compare the net gains. Settle on 2 interesting comparisons, i.e., 2 pairs of strategies, and make a plot for each of them. Also compute the average of the winnings over 10,000 replications and the spread of the winnings. Describe in words what you find interesting about them. To help you think of strategies, here are some questions to consider:
+
+* If you are making small bets, how much does the amount of money in your wallet matter?
+
+* What happens when I want to place more bets than the size of my wallet? Can I sometimes do this and other times not?
+
+* How does an infinite wallet compare to one with a capped amount of money? 
+
+* If the number of bets that I want to place is really large in comparison to my wallet, do I invariable run out of money?
+
+
+```{r comparison1}
+test1 = replicate(10000, 
+          betRed2(betAmt = 1, numBets = 100,
+                  wallet = 100000))
+mean(test1)
+
+test2 = replicate(10000, 
+          betRed2(betAmt = 1, numBets = 100,
+                  wallet = 1000000))
+mean(test2)
+
+plotGains(test1, test2, bw = 2,
+           title = 'Compare Betting Strategies for Wallet Size')
+```
+
+If you are making small bets, the amount of money in your wallet does not matter.
+
+```{r comparison2}
+test3 = replicate(10000, 
+          betRed2(betAmt = 4
+                  , numBets = 10000,
+                  wallet = 1000))
+mean(test3)
+
+test4 = replicate(10000, 
+          betRed2(betAmt = 1, numBets = 10000,
+                  wallet = 1000))
+mean(test4)
+
+plotGains(test3, test4, bw = 2,
+           title = 'Compare Betting Strategies for Bet Amount')
+```
+
+If the number of bets is greater than the amount of money in your wallet, place small bets, you will lost less quicker.
+
+## Other Bets in Roulette
+
+Next, we generalize the function to play other types of bets. Specifically, the caller can place one of the following bets: red, black, even, odd, low, high, dozen, column, single, split, street, and corner. These bets have different payoffs and different odds. To keep track of this information, create a 2-row matrix called `possibleBets`. The column names of the matrix are to match the bet names. The first row of this matrix is to contain the number of slots that the ball can land in for a win for the corresponding bet.  The second row is to contain the pay off (with respect to a $1 bet.) 
+
+The following code gives you a start. It creates the desired matrix for the first 4 types of bets. Augment this code so the matrix contains information for all 12 possible bets
+
+```{r}
+betNames = c("red", "black", "even", "odd", "low", "high", "dozen", "column", "single", "split", "street", "corner")
+slots = c(18, 18, 18, 18, 18, 18, 12, 12, 1, 2, 3, 4)
+payoff = c(1, 1, 1, 1, 1, 1, 2, 2, 35, 17, 11, 8)
+possibleBets = 
+  matrix(c(slots, payoff), 
+         nrow = 2, byrow = TRUE, 
+         dimnames = list(c("slots", "payoff"),
+                         betNames))
+```
+
+Modify your `betRed2` function so that you can place these other roulette bets. Call this new function `betRoulette`.  Add one more argument to the function.  This is called `typeOfBet`. Set its default value to "red".  When called, this parameter should be one of the `betNames`. 
+
+Then place your code to create `possibleBets` at the top of yur function including the expressions to create the vectors `betNames`, `slots` and `payoff`.
+
+
+```{r}
+betRoulette = function(numBets, betAmt = 1, wallet = betAmt, typeOfBet = "red") {
+  if (wallet < betAmt)
+    return(0)
+  betNames = c("red", "black", "even", "odd", "low", "high",
+               "dozen", "column", "single", "split", "street",
+               "corner")
+  
+  if (! typeOfBet %in% betNames) 
+    stop("Type of bet is not available")
+  
+  slots = c(18, 18, 18, 18, 18, 18, 12, 12, 1, 2, 3, 4)
+  payoff = c(1, 1, 1, 1, 1, 1, 2, 2, 35, 17, 11, 8) * -1
+  payoff[betNames == typeOfBet] = payoff[betNames == typeOfBet] * -1
+  
+  possibleBets = matrix(c(slots, payoff), 
+                        nrow = 2, byrow = TRUE, 
+                        dimnames = list(c("slots", "payoff"),
+                        betNames))
+  winLoss = sample(rep(payoff, slots),
+                   size = numBets, replace = TRUE)
+  
+  winLossFilter0 = winLoss/abs(winLoss)
+  
+  winLossFilter1 = cumsum(winLossFilter0 * betAmt)
+  
+  winLossFilter2 = wallet+winLossFilter1 >= 0
+  
+  netGain = sum(winLoss[winLossFilter2] * betAmt)
+  return(netGain)
+}
+```
+
+Again, DO NOT use any loops in this function.
+
+
+### Comparing strategies
+
+Try several type of bets and compare their net gains. Settle on 2 interesting comparisons, i.e., 2 pairs of strategies/bets, and make a plot for each of them. Also compute the average of the winnings over 10,000 replications and the spread of the winnings. Describe in words what you find interesting about them. Here are some questions to consider:
+
+* Is one of the inside bets any better or worse than the others? 
+
+* Are all of the outside bets equivalent to one another?
+
+* How do inside and outside bets compare to one another?
+
+First comparison
+
+```{r}
+test5 = replicate(10000, 
+          betRoulette(betAmt = 4
+                  , numBets = 10000,
+                  wallet = 1000, typeOfBet = "red"))
+mean(test5)
+
+test6 = replicate(10000, 
+          betRoulette(betAmt = 4, numBets = 10000,
+                  wallet = 1000, typeOfBet = "even"))
+mean(test6)
+
+plotGains(test5, test6, bw = 2,
+           title = 'Compare Betting Strategies for inside bets')
+```
+
+No specific type of inside bets is worst or better than the other because their slots are the same and the payoff are the same.
+
+Second comparison
+
+```{r}
+test7 = replicate(10000, 
+          betRoulette(betAmt = 4, numBets = 10000,
+                  wallet = 1000, typeOfBet = "single"))
+mean(test7)
+
+test8 = replicate(10000, 
+          betRoulette(betAmt = 4, numBets = 10000,
+                  wallet = 1000, typeOfBet = "corner"))
+mean(test8)
+
+plotGains(test7, test8, bw = 2,
+           title = 'Compare Betting Strategies for outside bets')
+```
+
+For outside bets, the one with fewer slots has a lower mean. In general, because outside bets have a greater payoff, outside bets have a greater mean than inside bets do.
+
+## Eficiency
+
+The vector operation in R tend to be much faster than looping. Below is a modification of the original `redBet` function that spins the wheel once and increments the net gain for each spin. 
+
+```{r}
+betRedSlow = function(numBets, betAmt = 1) {
+  wheel = rep(c(-1, 1), c(20, 18))
+  netGain = 0
+  
+  for (i in 1:numBets) {
+    winLoss = sample(wheel, size = 1)
+    netGain = netGain + sum(winLoss * betAmt)
+    }
+  
+  return(netGain)
+}
+```
+
+Time the code for `betRed` and `betRedSlow` for different numbers of bets. For example, below we call `system.time()` to compare the timing for 50 bets. We replicate the function call 3000 times to make a more accurate comparison.
+
+```{r}
+system.time(replicate(3000, 
+            betRed(numBets = 500)))[3] 
+
+system.time(replicate(3000, 
+            betRedSlow(numBets = 500)))[3]
+```
+
+
+Formalize the comparison for the following number of bets: 1, 10, 50, 100, 500, and 1000 bets.
+Set up a `for` loop to do this. Place the timings into a vector `timingsBet` and `timingsBetSlow`, 
+respectively. Each of these vectors should have 6 elements, one for each number of bets.
+
+
+```{r}
+numBets1 = c(1, 10, 50,100, 500, 1000) 
+timingsBet = numeric(length = 6)
+timingsBetSlow = numeric(length = 6)
+
+# Your for loop here
+for (i in 1:length(numBets1)) {
+   timingsBet[i] = system.time(replicate(3000,
+                              betRed(numBets = numBets1[i])))[3] 
+   timingsBetSlow[i] = system.time(replicate(3000, 
+                                   betRedSlow(numBets =
+                                               numBets1[i])))[3]
+    }
+
+```
+
+
+To analyze the results from the timings; examine the  ratio of timings, i.e.,
+
+```{r}
+timingsBetSlow / timingsBet
+```
+

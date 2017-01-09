@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1></h1>
+    <h2>Writing Functions</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Functions</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>R has many built-in functions like <code>mean()</code>, <code>class()</code>, and <code>quantile()</code>, each with its own specified set of arguments.</p>
+
+<p><code>function()</code> allows you to define your own function in R with specified arguments. The structure of a basic function will look something like this:</p>
+
+<pre><code>function_name &lt;- function(arg1, arg2) {
+  expression1
+  expression2
+  expression3
+  return_statement
+}
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Here is a simple squaring function:</p>
+
+<pre><code class="r">SqPlusOne &lt;- function(x) {
+  y &lt;- x^2
+  y + 1
+}
+
+SqPlusOne(1:5)
+</code></pre>
+
+<pre><code>## [1]  2  5 10 17 26
+</code></pre>
+
+<ul>
+<li><code>Square</code> is the <strong>name</strong> of the function</li>
+<li><code>x</code> is an <strong>argument</strong> of the function</li>
+<li><code>y &lt;- x^2</code> is an expression</li>
+<li>The two lines between the curly braces form the <strong>body</strong> of the function.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Steps to Writing a Function</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>There are five steps to writing a function:</p>
+
+<ol>
+<li>Explain: Describe the task in words</li>
+<li>Concrete: Write code for a specific example</li>
+<li>Abstract: Identify the variables and decide if they are required or have defaults</li>
+<li>Encapsulate: Wrap the code into a function where the parameters are the general variables</li>
+<li>Test: Check the function works as expected with your original data AND try the function on test cases with other data </li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Step 1: Explain</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We want to write a function called <code>CylinderVol</code> that takes in two arguments:</p>
+
+<ul>
+<li>r: radius of the base circle</li>
+<li>h: height of the cylinder</li>
+</ul>
+
+<p>The function should return the volume of a cylinder with the given radius and height. </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Step 2: Concrete</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we have a cylinder with radius 2 and height 1. </p>
+
+<p>We know that the volume of a cylinder is given by \(Volume = \pi r^2 h\) </p>
+
+<p>Plugging in values to our formula, we get that the volume of the cylinder is equal to:</p>
+
+<pre><code class="r">pi * 2^2 * 1
+</code></pre>
+
+<pre><code>## [1] 12.56637
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Step 3: Abstract</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We need two variables in order to calculate the volume of a cylinder: </p>
+
+<ol>
+<li>radius - which we will denote by r</li>
+<li>height - which we will denote by h</li>
+</ol>
+
+<p>We can make these required variables OR we can specify default values for these. For purposes of this example, we will specify default values for them, namely 1 and 1. </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Step 4: Encapsulate</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We now write a generalized function that takes in two variables, r and h, with default values 1 and 1, that will return the volume of a cylinder with specified radius and height.</p>
+
+<pre><code class="r">CylinderVol &lt;- function(r = 1, h = 1) {
+  pi * r^2 * h
+}
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Step 5: Test</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Recall: From our concrete example, we found that the volume of a cylinder with radius 2 and height 1 is equal to 12.5663706</p>
+
+<p>Let&#39;s test our function:</p>
+
+<pre><code class="r">CylinderVol(r = 2, h = 1)
+</code></pre>
+
+<pre><code>## [1] 12.56637
+</code></pre>
+
+<pre><code class="r">CylinderVol(r = 1, h = 1)
+</code></pre>
+
+<pre><code>## [1] 3.141593
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>Specifying Arguments</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>You can call on a function using the argument names</p>
+
+<pre><code class="r">CylinderVol(r = 1, h = 2)
+</code></pre>
+
+<pre><code>## [1] 6.283185
+</code></pre>
+
+<p>If you don&#39;t specify argument names, <code>R</code> will then assume that the arguments are ordered.</p>
+
+<pre><code class="r">CylinderVol(1, 2)
+</code></pre>
+
+<pre><code>## [1] 6.283185
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Specifying Arguments</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Using argument names lets you declare them out of order:</p>
+
+<pre><code class="r">CylinderVol(h = 2, r = 1)
+</code></pre>
+
+<pre><code>## [1] 6.283185
+</code></pre>
+
+<p>Be careful not to list arguments out of order without specifying the names.</p>
+
+<pre><code class="r">CylinderVol(2, 1)
+</code></pre>
+
+<pre><code>## [1] 12.56637
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Default v. Required Arguments</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We set <code>1</code> and <code>1</code> as the <strong>default values</strong> of <code>r</code> and <code>h</code>, respectively.  If not explicitly stated in a function call, <code>R</code> will assume those values.</p>
+
+<pre><code class="r">CylinderVol()
+</code></pre>
+
+<pre><code>## [1] 3.141593
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>Default v. Required Arguments</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we had written the function <code>CylinderVol</code> making <code>r</code> and <code>h</code> required values. Then, not specifying the arguments in the function call will return an error. </p>
+
+<pre><code class="r">CylinderVol &lt;- function(r, h) {
+  pi * r^2 * h
+}
+
+CylinderVol()
+</code></pre>
+
+<pre><code>## Error in CylinderVol(): argument &quot;r&quot; is missing, with no default
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <hgroup>
+    <h2>Your Turn</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We want to write a function called SubsetMean that takes in:</p>
+
+<ul>
+<li>x: a numeric vector</li>
+<li>upper.bound: a value by which you want to subset out all elements in x greater than or equal to this value (give this a default value of 10)</li>
+</ul>
+
+<p>The function should return:</p>
+
+<ul>
+<li>the mean value of all elements in the vector less than upper.bound</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">SubsetMean &lt;- function(x, upper.bound = 10) {
+  subset &lt;- x[x &lt; upper.bound]
+  subset.mean &lt;- mean(subset)
+  return(subset.mean)
+}
+
+SubsetMean(1:15)
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+<pre><code class="r">SubsetMean(c(1,3,5,7,9,NA,11,13,15))
+</code></pre>
+
+<pre><code>## [1] NA
+</code></pre>
+
+<p>Note: if our specified vector x has any NA elements, then SubsetMean will return NA. This is a default setting of the <code>mean()</code> function that can be overwritten with the argument <code>na.rm = TRUE</code>. </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>The ... argument</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The <code>...</code> argument in a function allows the function to accept additional arguments when it is called and these arguments can be passed along in a function call inside our function.</p>
+
+<p>We can specify this additional argument of the <code>mean()</code> function in our main function call <code>SubsetMean()</code> if we specify the <code>...</code> argument when writing the function.</p>
+
+<pre><code class="r">SubsetMean &lt;- function(x, upper.bound = 10, ...) {
+  subset &lt;- x[x &lt; upper.bound]
+  subset.mean &lt;- mean(subset, ...)
+  return(subset.mean)
+}
+
+SubsetMean(c(1,3,5,7,9,NA,11,13,15), na.rm = TRUE)
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Functions'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Example'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Steps to Writing a Function'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Step 1: Explain'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Step 2: Concrete'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Step 3: Abstract'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Step 4: Encapsulate'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Step 5: Test'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Specifying Arguments'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='Specifying Arguments'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Default v. Required Arguments'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Default v. Required Arguments'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='Your Turn'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='NA'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='The ... argument'>
+         15
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

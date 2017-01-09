@@ -1,0 +1,218 @@
+---
+title: "Web Cache"
+author: "Jun Tan 26370084"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+# When your code blocks are working, change FALSE to TRUE
+# so that you document knits all of the code blocks
+substitute = FALSE
+```
+
+Internet search engines, such as Google, Bing, and Ask, keep copies of Web pages so that when you make a query, they can quickly search their stored pages and return their findings to you.  These saved pages are called a Web cache. Of course, if the page has changed since the last time it was stored then the search engine serves stale pages.  In order to keep the cache fresh, Web pages need to be visited regularly and the cache updated with any changed pages.  How often do Web pages change? How often should the sites be visited to keep the cache fresh?  In this article, we consider these questions. This case study is based on the statistical analyses described in [1-3].
+
+# This Study
+
+To help answer these questions, we study the behavior of 1,000 Web pages. Each of these pages was visited every hour for 30 days. The page was compared to the previous visit, and if it had changed, the cache was updated and time of the visit was recorded.
+
+For example, consider the hypothetical set of 8 hourly visits to a Web page shown in the figure below. The top horizontal line shows when the page actually changed and the bottom line shows when a change was detected by a visit to the site. We see that the page changed 7 times, as denoted by the 7  dots that appear along the top line at the times when the page changed.  Notice that the page changed twice between hours 3 and 4, but when we visit the page, we observe only that the page has changed between these times, not that it has changed twice. Likewise, the page changed 3 times between hours 4 and 5, and all we can ascertain is that the page changed one or more times between these two visits. This means that in our 8 visits, we observed the page had changed on 4 visits. The data recorded for this page would be the visits on which it changed, i.e., 1, 2, 4, 5. 
+
+```{r figure1, echo=FALSE}
+locs = c(0.7, 1.4, 3.6, 3.9, 4.4, 4.6, 4.9)
+oldpar = par(mar = c(1,1,1,1), oma = c(5,4,0,0) + 0.1)
+
+plot(x = locs, y = rep(1.5, length(locs)), 
+     xlim = c(0,8), ylim = c(0.5, 2), axes = FALSE, 
+     ylab="", xlab = "", type = "n")
+segments(x0 = 0:8, x1 = 0:8, y0 = rep(0.9, 9), y1 = rep(1.6, 9), 
+         lwd = 2, lty = 2, col = "gray")
+
+abline(h= 1.5, col = "gray60")
+points(x = locs, y = rep(1.5, length(locs)),
+       pch = 19, cex = 1.2, col = "green")
+mtext(text = "Actual", side = 2, line = 0, at = 1.5)
+
+obs = c(1, 1 ,2, 1, 1, 2, 2, 2)
+abline(h = 1, col = "grey60")
+points(x = 1:8, y = rep(1, 8), pch = c(18, 5)[obs], 
+       cex = c(1.5, 1)[obs], col = c("blue", "black")[obs])
+text(x = 0:8, y = 0.85, labels = 0:8)
+mtext(text = "Observed", side = 2, line = 0, at = 1)
+
+par(oldpar)
+```
+
+This simple example demonstrates three important features of our data:
+
+* We do not observe the actual time of a change to a Web page, only the time interval in which it changed. 
+
+* We do not observe all of the changes. If a page changes on two or more occasions between visits, then we only know that at least one change occurred.
+
+* If we think of a Web page as a record or observation, then our records do not form a typical rectangular shape with a fixed set of columns corresponding to specific variables. For example, the record for our hypothetical Web page contains the values 1, 2, 4, 5 and the record for another Web page may contain only two values such as 2, 7.  This situation arises with, e.g., medical records where patients have a varying number of visits to a clinic. 
+
+
+The notion of non-rectangular data impacts how the data are organized  and how we write code to analyze the data.  
+
+We consider the question of how to estimate a Web page's rate of change after we have the opportunity to explore the data from the study.
+
+
+# Exploration
+
+We load the data into our R session as follows:
+
+```{r}
+load(url("http://www.stat.berkeley.edu/users/nolan/data/stat101/pages.rda"))
+```
+
+We have loaded the object called `pages`.
+Confirm that it is a list that contains `domain`, `numVisits`, and `visitsWChanges`.  The `domain` variable contains the last part of the domain name for the Web page, e.g., .com, .edu, .gov, which identifies the type of institution that owns the page.  We examine the first few values in `domain`:
+
+```{r}
+head(pages$domain)
+names(pages)
+```
+
+We see that the first domain is .net, which stands for a network technology; the next is .jp, which means the domain is registered in Japan; similarly .ca and .de are for domains registered in Canada and Germany, respectively.
+
+Q1. Explore `numVisits`. This variable contains the number of visits made to the Web page. Each page was supposed to be visited hourly for 30 days, which in this case means that there were $24 \times 30$, or 720 visits.  Since the first visit has no previous version of the page for comparison, we have only 719 subsequent visits (or revisits) where we may observe a change. Do all sites have 719 visits?  Make a plot to examine the distirbution of the number of visits.
+
+
+```{r}
+require(ggplot2)
+stat1 = pages[[1]]
+sapply(pages, function(stat1) length(stat1))
+all(pages$numVisits >= 719)
+dnDF = data.frame(pages$domain, pages$numVisits)
+ggplot(dnDF,aes(x=pages.numVisits)) + 
+  geom_histogram() +
+  xlab("Number of visits")
+```
+
+What do you find?
+Not all sites have 719 or more visits.
+Some of the webs do not have enough visits required. But most of them have over 700 visits.
+
+
+Q2. Let's next examine `visitsWChanges`.  Look at the first few records. 
+
+
+```{r}
+head(pages$visitsWChanges)
+```
+
+
+`visitsWChanges` is a list structure. The values for a page are the times of the visits when a change is observed, and since there potentially are a different number of values for each page, we store these data in R as a list of arrays of differing lengths. 
+
+Q3. In the code block below, use `sapply()` to determine how many times a change was observed for each Web page. Assign the return value to `numChanges` and place it in `pages`
+
+```{r, eval=substitute}
+stat2 = pages$visitsWChanges[[1]]
+pages$numChanges = sapply(pages$visitsWChanges, function(stat2) length(stat2))
+head(pages$numChanges)
+```
+
+
+Q4. Make a  histogram to explore the distribution of `numChanges`. 
+
+```{r}
+dcDF = data.frame(pages$domain, pages$numChanges)
+ggplot(dcDF,aes(x=pages.numChanges)) + 
+  geom_histogram() +
+  xlab("Number of changes") +
+  ggtitle("Count for number of changes")
+```
+
+Give a one sentence description of this distribution, e.g., mention skewness/symmetry, modes, tails, and anomolies.
+The distribution skews to the left and the right tail tends to be flat.
+
+Q5. Make a scatter plot of the number of changes against the number of visits to a page.  
+
+
+```{r}
+cvDF = data.frame(pages$numVisits, pages$numChanges)
+ggplot(cvDF, aes(x = pages.numVisits, y = pages.numChanges))+
+  geom_point() + ylab("num of changes") + xlab("num of visits") + ggtitle("num of changes vs num of visits")
+```
+
+Why does it have a triangular shape?
+Because as you observe more frequently the more changes you would see. 
+
+Which are the densest regions of the scatter? Explain why this might be the case.
+The right most points along a vertical line and the bottom most region are the densest because even if you visit a page very frequently, it is possible to see all combination of number of changes in different pages, and the number of changes in some pages are very low even though you visit them very frequently. 
+
+# Patterns in the Times When a Page Changes
+
+Do the Web sites change with the same frequency at differnt times of day and day of week? 
+
+We don't have the actual time when a Web site is visited, but we do have the hourly sequence from 1 to 719 that serves as a time proxy. The sites are from around the world, but those in the US occur roughly at the same time.  In other words, if we suppose that time 0 is midnight on the first day, then a change at visit 7 is at 7 am on the first day, at visit 27 is at 3am on the second day, at 47 is at 11 pm on the third day, etc. It doesn't really matter if we get the right starting time as we are looking for patterns.
+
+If we restrict the sites that we examine to U.S. domains (.com, .net, and .org is enough), then the time of day is roughly the same.  Also, we want to look only at sites that were visited for at least 4 weeks
+and had at least 20 changes.  
+
+Q6. Create a subset of sites that meet these 3 criteria and place the subset in a new list called `placeSub`
+
+```{r}
+usDomain = "net" == pages[['domain']] | 
+                        "com" == pages[['domain']] | 
+                        "org" == pages[['domain']]
+changes = pages$numChanges >= 20
+visits = pages$numVisits >= 672
+select = usDomain & changes & visits
+placeSub = list(domain = pages$domain[select],
+                numVisits = pages$numVisits[select],
+                numChanges = pages$numChanges[select],
+                visitsWChange = pages$visitsWChanges[select])
+```
+
+
+
+Let's plot the proportion of changes made on all the selected Web sites combined for each hour of the day, day of the week. In other words, if say 100,000 changes were observed all together and 500 occurred on the second day of the week at 10 am (across the 4 weeks of observations and all the sites) then 500/100000 or 0.005 of the changes occurred at 10 am on the 2nd day of the week.
+
+How do we make a time series plot of this information?  We need 2 vectors, time and proportion of changes:
+
+Q7. Combine the list of the `visitsWChanges` in `placesSub` into 1 vector. Drop all of those values that occurred after the 28th day (we want each day to occur 4 times in the sequence).  Call this new vector `changesIn4wks`.
+
+```{r}
+flatList = unlist(placeSub$visitsWChange)
+changesIn4wks = flatList[flatList <= 672]
+```
+
+
+Q8. Convert the values in `changesIn4wks` into a value that represents the time of day and day of week. In other words, 48 stays the same as it is midnight on the 2nd day, but 169 becomes 1 because it is 1 am on the first day of the second week, and we want to drop the week information. Call this new variable, `wklyChanges`.  (Note that modular arithmetic can be useful here.)
+
+```{r, eval=substitute}
+wklyChanges = changesIn4wks %% 168
+```
+
+
+Q9. Use `table()` and `length()` to find the proportion of changes that occur each hour of the day for each day of the week. Call this new variable `perChanges`. 
+
+```{r}
+wklyChangesTlb = table(wklyChanges)
+perChanges = as.numeric(prop.table(wklyChangesTlb))
+```
+
+
+Q10. Create a variable that contains all of the unique values in `wklyChanges`. This most likely is 1:168. Why might it be different? Call this vector `wklyTimes`. It's length should match the length of `perChanges`. Confirm that this is the case. 
+
+```{r, eval=substitute}
+wklyTimes = unique(wklyChanges)
+```
+length of the wklyTimes = length of perChanges because there are only 168 hours in a week.
+
+
+Q11. Combine `perChanges` and `wklyTimes` into a data frame called `patterns`. Make a smoothed line plot with `perChanges` and `wklyTimes`. We smooth it because there's a lot of variability in the hour to hour proportions, but we don't want to over smooth it and lost the patterns. Choose the bandwidth accordingly. Also, add a horizontal reference line located at the proportion that you expect to see if the changes occurred uniformly in the hours of the week. 
+
+```{r, eval = substitute}
+patterns = data.frame(perChanges, wklyTimes)
+
+ggplot(data = patterns, aes(wklyTimes, perChanges)) + geom_point() + stat_smooth(span = 0.3) + geom_hline(yintercept = 0.006)
+```
+
+What patterns do you see?
+Most of the changes occur in the middle of the week and the amount of changes decrease at the end of the week.
+
+
+
+

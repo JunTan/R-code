@@ -1,0 +1,173 @@
+---
+title: "EDA of Bike Sharing"
+author: "Jun Tan 26370084"
+output: word_document
+---
+
+DUE: Tuesday Sep 13 at 8pm
+
+
+## Introduction
+
+This assignment has four goals: 
+(a) to learn how to read plain text delimited data into R,
+(b) to gain experience preparing data for analysis, 
+(c) to use EDA to learn about your data 
+(d) to learn how to make informative plots
+
+This assigment includes both specific tasks to perform and open-ended questions to investigate. The open-ended questions ask you to use statistical / data science thinking to decide on a plot to make and to summarize information gleaned from these visualizations. 
+
+There are 4 parts to this assignment: data preparation, exploring the distribution of riders, exploring the relationship between time and rider counts, and exploring the relationship between weather and rider counts. The data preparation section gives you specific tasks to perform.  Then in each of the next three sections, you are asked to create 2 plots. The first plot is described in some detail and the second plot is one of your choosing. Be sure to choose a plot that provides additional information about the distributions and relationships in the data. Remember that we are interested in how ride sharing works so, e.g., plots that examine the weather in DC without reference to ride sharing are not interesting. 
+
+USE *ggplot* TO MAKE ALL OF YOUR PLOTS
+
+Be sure that your plots have informative titles, axis labels, and legends. 
+
+## The Data
+
+You will work with data on bike sharing in Washington D.C.  These data are available on bcourses in the Data folder in the Files tab. Download the data to your computer and examine it in a plain text editor to figure out the delimiters and whether the file has a header. Use this information to set up a call to *read_delim()* and assign the return value to the data frame *bike*. The *read_delim* function is in the *readr* package so be sure to install this package before trying to call the function.
+
+If you like, you can read the data into R from my Website. The URL is 
+http://www.stat.berkeley.edu/users/nolan/data/bikeshare.txt
+
+```{r, eval=TRUE}
+# Add your arguments to read_delim
+# and switch FALSE to TRUE in the eval argument to the code chunk
+require(readr)
+bike = read_delim("http://www.stat.berkeley.edu/users/nolan/data/bikeshare.txt", ",")  
+
+```
+
+The variables in this data frame are defined as:
+
+  - instant: record index
+  - dteday : date
+  - season : season (1:spring, 2:summer, 3:fall, 4:winter)
+  - yr : year (0: 2011, 1:2012)
+  - mnth : month ( 1 to 12)
+  - hr : hour (0 to 23)
+  - holiday : whether day is holiday or not
+  - weekday : day of the week
+  - workingday : if day is neither weekend nor holiday
+  - weathersit : 
+      - 1: Clear or partly cloudy 
+      - 2: Mist + clouds
+      - 3: Light Snow or Rain
+      - 4: Heavy Rain or Snow
+  - temp : Normalized temperature in Celsius (divided by 41)
+  - atemp: Normalized feeling temperature in Celsius (divided by 50)
+  - hum: Normalized percent humidity (divided by 100)
+  - windspeed: Normalized wind speed (divided by 67)
+  - casual: count of casual users
+  - registered: count of registered users
+  - cnt: count of total rental bikes including casual and registered
+
+
+## Data Preparation
+
+Many of the variables that are numeric/integer should be factors.
+These include holiday, weekday, workingday, and weathersit. 
+Convert these 4 variables to factors and use appropriate labels for the levels. In particular use the 3 letter label, e.g., Sun, Mon, ... for weekday. You may simply use yes/no for holiday and workingday. Overwrite the corresponding variables in the data frame.
+
+```{r makeFactor}
+bike$holiday = factor(bike$holiday, levels = c(0, 1), labels = c("No", "Yes"))
+
+bike$weekday = factor(bike$weekday, levels = c(0: 6), labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+bike$workingday = factor(bike$workingday, levels = c(0, 1), labels = c("No", "Yes"))
+
+bike$weathersit = factor(bike$weathersit, level = c(1: 4), labels = c("Clear or partly cloudy", "Mist + clouds", "Light Snow or Rain", "Heavy Rain or Snow"))
+```
+
+
+Check that date (*dteday*) is of class Date. It's easier to work with dates in the POSIXct format. Convert *dteday* to POSIXct and add it to the data frame *bike*. Call this new variable *newDate*.  We want the date to contain the hour of the day. This information is in the *hr* variable.
+POSIXct understands addition, and we can simply add these 2 vectors together - EXCEPT that the times are recorded in second so you will need to rescale *hr* so it is in seconds and then add it to *newDate*. Save the revised date in *newDate*
+
+
+```{r createDate}
+modifiedHr = bike$hr +8 *3600
+newData = as.POSIXct(bike$dteday) + modifiedHr
+bike$newData = newData
+```
+
+Confirm that your code works as expected. One potential problem is with the time zone and the starting time. It's fine to leave the time zone as is, but you may need to add 8 hours to all values in *newDate* to get them to match the correct time.
+
+
+## Exploring the Distribution of Riders
+
+Begin by comparing the distribution of the counts of casual and registered riders. Use a quantile-quantile plot to make this comparison.
+
+
+```{r exploreRiderCounts}
+require(ggplot2)
+
+qqplot(bike$casual, bike$registered, plot.it = TRUE)
+```
+
+What does this plot tell you about the similarities and differences between these two distributions?
+
+Both quantiles are linear proportion to each other. Registered is always 2 times the casual rider.
+
+Why would superposing 2 density curves not be a good approach for comparing these 2 distributions?
+
+Because if the two distributions are very similar and their curves overlap in a lot places, then it is hard to tell the difference of the two distributions.
+
+Your Turn: Make another plot that examines the distribution of the counts of riders. Explain what additional insights your plot provides.
+
+```{r myExploreRiderCounts}
+ggplot(data = bike, aes(x = weekday, y = casual)) + geom_line() + geom_point() + ggtitle("Amount of casual riders in the weekday")
+
+ggplot(data = bike, aes(x = weekday, y = registered)) + geom_line() + geom_point() + ggtitle("Amount of registered riders in the weekday")
+
+ggplot(data = bike, aes(casual, registered)) + geom_point(size = 0.1, alpha = 0.5)+ ggtitle("Amount of registered riders vs casual riders")
+```
+More casual riders in weekend while the amount of registered riders is twice as the amount in weekend. 
+Points are more crowded near the region of 0~100 in the scatter plot. 
+
+## Exploring Ride Sharing and Time
+
+Use *newDate* to make a line plot for the number of casual riders and super-pose on it a line plot for the number of registered riders. Restrict the time interval to the month of June in 2011. Use color to distinguish between the 2 types of riders.
+
+```{r rideTime}
+ggplot(data = bike[newData >= as.POSIXct("2011-06-01") & newData < as.POSIXct("2011-07-01"),]) + 
+  geom_line(position = 'jitter', mapping = aes(x = newData, y = casual, color = 'casual')) + 
+  geom_line(position = 'jitter', mapping = aes(x = newData, y = registered, color = 'registered')) + 
+  ggtitle("Consumers' count in different days") + labs(x = "day", y = "count")
+```
+
+This plot has several intersting features. How do the number of casual and registered riders compare for different times of day and days of the week? 
+The amount of registered consumers is always higher than the amount of casual consumers. But both of them decrease or increase simutanously in some intervals.
+
+Your Turn: Make another plot that examines the relationship between time and rider counts. Explain what additional insights your plot provides. (Recall that there are several other variables in the plot that contain time-related information)
+
+```{r myRideTimePlot}
+ggplot(bike, aes(x = season, y = casual)) + geom_point() + ggtitle("Total amount of casual riders in each season")
+ggplot(bike, aes(x = season, y = registered)) + geom_point() + ggtitle("Total amount of registered riders in each season")
+```
+Regsitered riders are always more than casual riders. 
+Registered riders are fewer in the first season while there are some high amount of casual riders in the first season. Moreover, the amount of casual riders in constant throughout the year.
+
+## Exploring Ride Sharing and Weather
+
+Create a new variable called *propCasual* that is the proportion of casual riders among total riders in an hour. Add this variable to the data frame *bike*.  Make a scatter plot of *propCasual* 
+and *temp*. The temperature should be jittered to avoid overplotting. Also, color the points according to the day of the week or to the weather, whichever you find is more informative.
+
+```{r exploreWeather}
+propCasual = bike$casual/bike$cnt
+bike$propCasual = propCasual
+ggplot(bike, aes(x = temp, y = propCasual, color = weathersit)) + geom_point(position = "jitter") + ggtitle("Proportion of casual riders vs the temperature")
+```
+
+What interesting aspect about this relationship do you see in this plot?  
+When the temperature is in the range of 0 to 0.1, very few casual riders. The proportion of casual riders is below 0.5 mostly but there are some chance that it is 1.00 when the range of temperature is between 0.1 to 0.7.
+
+Your Turn: Make another plot that examines the relationship between weather and rider counts. Explain what additional insights your plot provides. (Recall that there are several other variables in the plot that contain weather-related information.)
+
+```{r myRideWeatherPlot}
+ggplot(bike, aes(x = weathersit, y = propCasual)) + geom_point(position = "jitter") + ggtitle("Proportion of casual riders vs the weather")
+```
+Most casual riders perfer to go out when the weather is clear or partly cloudy. In this weather, the proportion of casual riders is highly to be 1.00. When it is light snow or rain, there are still a fair amount of casual riders. However, the amount of causal riders decearses exponentially when it is heavy rain or snow. 
+
+
+
+

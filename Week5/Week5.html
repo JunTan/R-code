@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1></h1>
+    <h2>If-Else Statements and Loops</h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>If-Else Statements</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>If we want our script to perform certain operations under specific conditions, we can use if-else statements.  The basic construct looks like:</p>
+
+<pre><code class="r">if (condition1) {
+  statement1
+} else if (condition2) {
+  statement2
+} else if (condition3) {
+  statement3
+} else {
+  statement4
+}
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>How If-Else Statements work</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><code>if()</code> takes a <strong>logical</strong> condition</li>
+<li>The condition <strong>must be of length one</strong> </li>
+<li>It executes the next expression if the condition is true</li>
+<li>If the statement is false, it looks for an <code>else</code> clause to perform.  Otherwise it does nothing.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Suppose we write a function called <code>Check5</code> that takes in a numeric vector of length 1 (a single number) and returns <code>TRUE</code> if the number is less than 5 and <code>FALSE</code> otherwise.</p>
+
+<pre><code class="r">Check &lt;- function(x) {
+  if (x &lt; 5) {
+    return(TRUE)
+  } else if (x &gt; 5) {
+    return(FALSE)
+  }
+} 
+</code></pre>
+
+<p>What would Check(5) return?</p>
+
+<p>What would Check(1:5) return?</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Returning Values</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Functions return values in an explicit return statement</p>
+
+<pre><code class="r">check &lt;- function(x) {
+   if (x&gt;0) {
+       result &lt;- &quot;Positive&quot;
+   }
+   else if (x&lt;0) {
+       result &lt;- &quot;Negative&quot;
+   }
+   else {
+       result &lt;- &quot;Zero&quot;
+   }
+   return(result)
+}
+Check(-2)
+</code></pre>
+
+<pre><code>## [1] TRUE
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Returning Values</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>What happens if we don&#39;t include the return function?</p>
+
+<pre><code class="r">check &lt;- function(x) {
+   if (x&gt;0) {
+       result &lt;- &quot;Positive&quot;
+   }
+   else if (x&lt;0) {
+       result &lt;- &quot;Negative&quot;
+   }
+   else {
+       result &lt;- &quot;Zero&quot;
+   }
+}
+check(-2)
+</code></pre>
+
+<p>If no explicit return statement is given, the last evaluated expression is returned.</p>
+
+<p>Note: if the last evaluated expressions is saved into an object, the function will not return anything since we didn&#39;t call on the object.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Returning Multiple Values</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The <code>return()</code> function can return only a single object. If we want to return multiple values in R, we can use a list (or other objects) and return it.</p>
+
+<pre><code class="r">AddSubtract &lt;- function(x, y) {
+  results &lt;- list(add = x + y, subtract = x - y)
+  return(results)
+}
+AddSubtract(2, 1)
+</code></pre>
+
+<pre><code>## $add
+## [1] 3
+## 
+## $subtract
+## [1] 1
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Stop</h2>
+  </hgroup>
+  <article data-timings="">
+    <p><code>stop()</code> halts function execution and returns an error message.  This is helpful when we want to make sure the user has given meaningful inputs.</p>
+
+<pre><code class="r">CheckEven &lt;- function(x) {
+  if (x != as.integer(x)) {
+    stop(&quot;x is not a whole number&quot;)
+  } else {
+    return(x %% 2 == 0)
+  }
+}
+CheckEven(1)
+</code></pre>
+
+<pre><code>## [1] FALSE
+</code></pre>
+
+<pre><code class="r">CheckEven(3.14159)
+</code></pre>
+
+<pre><code>## Error in CheckEven(3.14159): x is not a whole number
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Warning</h2>
+  </hgroup>
+  <article data-timings="">
+    <p><code>warning()</code> returns a warning message, but does not halt function execution.  This is helpful in letting the user know that something unexpected has happened while still evaluating the function call without returning an error.</p>
+
+<pre><code class="r">Divide = function(x, y) {
+  if (y == 0) {warning(&quot;Dividing by 0&quot;)} 
+  return(x/y)
+}
+</code></pre>
+
+<pre><code class="r">Divide(1,0)
+</code></pre>
+
+<pre><code>## Warning in Divide(1, 0): Dividing by 0
+</code></pre>
+
+<pre><code>## [1] Inf
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>For Loops</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>A for loop executes a set of actions over an index set. The basic construct of a for loop looks like:</p>
+
+<pre><code class="r">for(var in vector) {
+  statement
+}
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>For loops are typically used by setting the index set to be the indices of an object:</p>
+
+<pre><code class="r">x &lt;- 1:10
+for(i in 3:length(x)) {
+  x[i] &lt;- x[i-2] + x[i-1]
+}
+x
+</code></pre>
+
+<pre><code>##  [1]  1  2  3  5  8 13 21 34 55 89
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Though not as common, the for loop can loop over any set, not just indices.</p>
+
+<pre><code class="r">df &lt;- data.frame(first_column = 1:3, second_column = c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;), third_column = 7:9, stringsAsFactors = FALSE)
+names(df)
+</code></pre>
+
+<pre><code>## [1] &quot;first_column&quot;  &quot;second_column&quot; &quot;third_column&quot;
+</code></pre>
+
+<pre><code class="r">for (name in names(df)) {
+  print(df[[name]])
+}
+</code></pre>
+
+<pre><code>## [1] 1 2 3
+## [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;
+## [1] 7 8 9
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>Break</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The <code>break()</code> function is used inside a loop to stop the iterations and program control resumes at the next statement following the loop.</p>
+
+<pre><code class="r">x &lt;- letters[1:10]
+for (i in 1:length(x)) {
+  if (x[i] == &quot;f&quot;) {break}
+  print(x[i])
+}
+</code></pre>
+
+<pre><code>## [1] &quot;a&quot;
+## [1] &quot;b&quot;
+## [1] &quot;c&quot;
+## [1] &quot;d&quot;
+## [1] &quot;e&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <hgroup>
+    <h2>While Loops</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>A while loop repeats a statement or block of statements for as many times as a particular condition is <code>TRUE</code>.</p>
+
+<p>In the example below, our while loop continually divides some set number n by 2 until an odd number is reached.</p>
+
+<pre><code class="r">n &lt;- 748192
+while (n %% 2 == 0) {
+  n &lt;- n/2
+}
+n
+</code></pre>
+
+<pre><code>## [1] 23381
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <hgroup>
+    <h2>Initializing Values</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Notice that it&#39;s often the case that you have some initial value for the loop.  Otherwise the object that you want to change using a loop wouldn&#39;t actually exist.  This applies to both for and while loops. </p>
+
+<p>Here, we initialize a counter variable that tells us how many times a number is divided by 2 before an odd number is reached.</p>
+
+<pre><code class="r">n &lt;- 748192
+counter &lt;- 0
+while (n %% 2 == 0) {
+  n &lt;- n/2
+  counter &lt;- counter + 1
+}
+counter
+</code></pre>
+
+<pre><code>## [1] 5
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='If-Else Statements'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='How If-Else Statements work'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Example'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Returning Values'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Returning Values'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Returning Multiple Values'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Stop'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Warning'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='For Loops'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='Example'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Example'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Break'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='While Loops'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='Initializing Values'>
+         14
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

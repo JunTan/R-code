@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>XML</title>
+  <meta charset="utf-8">
+  <meta name="description" content="XML">
+  <meta name="author" content="">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>XML</h1>
+    <h2></h2>
+    <p><br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>XML Example</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">&lt;movie mins=&quot;126&quot; lang=&quot;en&quot;&gt;
+  Good Will Hunting
+&lt;/movie&gt;
+</code></pre>
+
+<ul>
+<li>one single element <code>movie</code></li>
+<li>start-tag: <code>&lt;movie&gt;</code></li>
+<li>end-tag: <code>&lt;/movie&gt;</code></li>
+<li>content: <code>Good Will Hunting</code></li>
+<li>xml elements can have <strong>attributes</strong>
+
+<ul>
+<li>attributes: <code>mins</code> (minutes) and <code>lang</code> (language)</li>
+<li>attributes are attached to the element&#39;s start tag</li>
+<li>attribute values must be quoted</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>XML Hierarchy Structure</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">&lt;Root&gt;
+  &lt;child_1&gt;...&lt;/child_1&gt;
+  &lt;child_2&gt;...&lt;/child_2&gt;
+    &lt;subchild&gt;...&lt;/subchild&gt;
+  &lt;child_3&gt;...&lt;/child_3&gt;
+&lt;/Root&gt;
+</code></pre>
+
+<ul>
+<li>An XML document can be represented with a <strong>tree structure</strong></li>
+<li>An XML document must have one single <code>Root</code> element</li>
+<li>The <code>Root</code> may contain child elements</li>
+<li>A child element may contain subchild elements</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Well-Formedness</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We say that an XML document is well-formed when it obeys the basic syntax rules of XML. Some of those rules are:</p>
+
+<ul>
+<li>one root element containing the rest of elements</li>
+<li>properly nested elements</li>
+<li>self-closing tags</li>
+<li>attributes appear in start-tags of elements</li>
+<li>attribute values must be quoted</li>
+<li>element names and attribute names are case sensitive</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>XML Tree Structure</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Each element can have:</p>
+
+<ul>
+<li>a name</li>
+<li>any number of attributes</li>
+<li>optional content</li>
+<li>other nested elements</li>
+</ul>
+
+<p>Traversing the tree:</p>
+
+<p>There is always a unique path from the root node to any given node</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>XPath</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>XPath</p>
+
+<ul>
+<li>is a language for finding information in an XML document</li>
+<li>uses path expressions to select nodes or node-sets in an XML document</li>
+<li>works by identifying patterns to match data or content</li>
+</ul>
+
+<p>We can specify paths through the tree structure:</p>
+
+<ul>
+<li>based on node names</li>
+<li>based on node content</li>
+<li>based on a node&#39;s relationship to other nodes</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Selecting Nodes</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The main path expressions (i.e. symbols) are:</p>
+
+<table><thead>
+<tr>
+<th>Symbol</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>/</td>
+<td>selects from the root node</td>
+</tr>
+<tr>
+<td>//</td>
+<td>selects from nodes anywhere</td>
+</tr>
+<tr>
+<td>.</td>
+<td>selects from the current node</td>
+</tr>
+<tr>
+<td>..</td>
+<td>selects from the parent of the current node</td>
+</tr>
+<tr>
+<td>@</td>
+<td>selects attributes</td>
+</tr>
+<tr>
+<td>[]</td>
+<td>square brackets indicate attributes</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>XPath Predicates</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>XPath Predicates (in square brackets []) allow you to find a specific node or nodes that contains a specific value</li>
+<li>You can use the usual comparison operators &lt;, &lt;=, etc</li>
+<li>A major difference is that equality is = and not ==</li>
+<li>In addition, the word &#39;or&#39; is used in place of | </li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Selecting Unknown Nodes</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>XPath wildcards can be used to select unknown XML elements</p>
+
+<table><thead>
+<tr>
+<th>Symbol</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>*</td>
+<td>matches any element node</td>
+</tr>
+<tr>
+<td>@*</td>
+<td>matches any attribute node</td>
+</tr>
+<tr>
+<td>node()</td>
+<td>matches any node of any kind</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>XML package</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Handy functions for parsing XML:</p>
+
+<table><thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>xmlParse</td>
+<td>read an XML file into R</td>
+</tr>
+<tr>
+<td>xmlValue</td>
+<td>retrieve text content of a node (including content of all child nodes)</td>
+</tr>
+<tr>
+<td>xmlSize</td>
+<td>return the number of child nodes</td>
+</tr>
+<tr>
+<td>xmlName</td>
+<td>return the tag name of a node</td>
+</tr>
+<tr>
+<td>xmlGetAttr</td>
+<td>return the attribute value of the specified attribute</td>
+</tr>
+</tbody></table>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>xmlApply, xmlSApply</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><code>xmlApply</code>: XML version of lapply; returns a list</li>
+<li><code>xmlSApply</code>: XML version of sapply; returns a simpler data structure if possible</li>
+<li>Each takes an XMLNode object as its primary argument. They iterate over the node&#39;s children nodes, invoking the given function.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Functions that take XPath expressions</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li><p><code>getNodeSet(xmlTree, xpath expression)</code>
+returns a list of XML nodes from <code>xmlTree</code> that satisfy the XPath expression</p></li>
+<li><p><code>xpathSApply(xmlTree, xpath, function)</code>
+the function (e.g. <code>xmlValue</code>) is applied to those nodes in the XML tree that satisfy the XPath expression. The return value is a vector when possible. </p>
+
+<ul>
+<li><code>xpathApply</code> always returns a list.</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>Example 1</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Write the xpath that will select all jobs with <code>priority</code> corresponding to &quot;critical&quot; or &quot;high&quot;.</p>
+
+<pre><code class="r">x &lt;- xmlParse(&#39;&lt;jobs&gt;
+  &lt;job priority=&quot;critical&quot; name=&quot;finish project&quot; /&gt;
+  &lt;job priority=&quot;low&quot; name=&quot;clear rubbish&quot; /&gt;
+  &lt;job priority=&quot;low&quot; name=&quot;pet cat&quot; /&gt;
+  &lt;job priority=&quot;medium&quot; name=&quot;eat&quot; /&gt;
+  &lt;job priority=&quot;high&quot; name=&quot;make phone call&quot; /&gt;
+&lt;/jobs&gt;&#39;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <hgroup>
+    <h2>Example 1</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">getNodeSet(x, &quot;//job[@priority=&#39;critical&#39; or @priority=&#39;high&#39;]&quot;)
+</code></pre>
+
+<pre><code>## [[1]]
+## &lt;job priority=&quot;critical&quot; name=&quot;finish project&quot;/&gt; 
+## 
+## [[2]]
+## &lt;job priority=&quot;high&quot; name=&quot;make phone call&quot;/&gt; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;XMLNodeSet&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <hgroup>
+    <h2>Example 2</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Write the xpath to select all persons older than 25.</p>
+
+<pre><code class="r">x &lt;- xmlParse(&#39;&lt;persons&gt;
+  &lt;person firstName=&quot;Renan&quot; lastName=&quot;Pazinni&quot; age=&quot;28&quot; /&gt;
+  &lt;person firstName=&quot;Richard&quot; lastName=&quot;Wang&quot; age=&quot;20&quot; /&gt;
+  &lt;person firstName=&quot;Catherine&quot; lastName=&quot;Ladha&quot; age=&quot;24&quot; /&gt;
+  &lt;person firstName=&quot;Trammy&quot; lastName=&quot;Burgess&quot; age=&quot;27&quot; /&gt;
+&lt;/persons&gt;&#39;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>Example 2</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">getNodeSet(x, &#39;//person[@age &gt; 25]&#39;)
+</code></pre>
+
+<pre><code>## [[1]]
+## &lt;person firstName=&quot;Renan&quot; lastName=&quot;Pazinni&quot; age=&quot;28&quot;/&gt; 
+## 
+## [[2]]
+## &lt;person firstName=&quot;Trammy&quot; lastName=&quot;Burgess&quot; age=&quot;27&quot;/&gt; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;XMLNodeSet&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-16" style="background:;">
+  <hgroup>
+    <h2>Example 3</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Write the xpath that will select all document elements beneath the node <code>linkList</code> with the name <code>A</code>.</p>
+
+<pre><code class="r">x &lt;- xmlParse(&#39;&lt;document xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;&gt;
+  &lt;linkList name=&quot;A&quot;&gt;
+    &lt;document xlink:href=&quot;15024&quot; /&gt;
+    &lt;document xlink:href=&quot;15028&quot; /&gt;
+  &lt;/linkList&gt;
+  &lt;linkList name=&quot;B&quot;&gt;
+    &lt;document xlink:href=&quot;15030&quot; /&gt;
+    &lt;document xlink:href=&quot;15032&quot; /&gt;
+  &lt;/linkList&gt;
+&lt;/document&gt;&#39;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  <hgroup>
+    <h2>Example 3</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">getNodeSet(x, &quot;//linkList[@name = &#39;A&#39;]/*&quot;)
+</code></pre>
+
+<pre><code>## [[1]]
+## &lt;document xlink:href=&quot;15024&quot;/&gt; 
+## 
+## [[2]]
+## &lt;document xlink:href=&quot;15028&quot;/&gt; 
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;XMLNodeSet&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='XML Example'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='XML Hierarchy Structure'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Well-Formedness'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='XML Tree Structure'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='XPath'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Selecting Nodes'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='XPath Predicates'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Selecting Unknown Nodes'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='XML package'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='xmlApply, xmlSApply'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Functions that take XPath expressions'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Example 1'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='Example 1'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='Example 2'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='Example 2'>
+         15
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=16 title='Example 3'>
+         16
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='Example 3'>
+         17
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
